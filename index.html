@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Sublex - Pro Subtitles</title>
+    <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "outline-variant": "#514255",
+                        "on-secondary-fixed-variant": "#004f54",
+                        "surface-tint": "#ecb2ff",
+                        "surface-container-highest": "#353437",
+                        "on-tertiary-container": "#ffffff",
+                        "on-primary-fixed": "#320047",
+                        "tertiary-container": "#168900",
+                        "secondary-fixed-dim": "#00dbe9",
+                        "primary-container": "#bd00ff",
+                        "on-tertiary": "#053900",
+                        "tertiary": "#2ae500",
+                        "inverse-surface": "#e5e1e4",
+                        "on-surface": "#e5e1e4",
+                        "on-secondary-fixed": "#002022",
+                        "on-primary": "#520071",
+                        "surface": "#131315",
+                        "surface-dim": "#131315",
+                        "secondary-container": "#00eefc",
+                        "surface-container-lowest": "#0e0e10",
+                        "error": "#ffb4ab",
+                        "on-surface-variant": "#d4c0d7",
+                        "on-primary-container": "#ffffff",
+                        "tertiary-fixed-dim": "#2ae500",
+                        "primary-fixed": "#f8d8ff",
+                        "on-secondary": "#00363a",
+                        "on-tertiary-fixed": "#022100",
+                        "on-secondary-container": "#00686f",
+                        "outline": "#9d8ba0",
+                        "surface-container": "#201f22",
+                        "inverse-on-surface": "#313032",
+                        "primary-fixed-dim": "#ecb2ff",
+                        "surface-bright": "#39393b",
+                        "error-container": "#93000a",
+                        "surface-container-high": "#2a2a2c",
+                        "primary": "#ecb2ff",
+                        "on-background": "#e5e1e4",
+                        "surface-variant": "#353437",
+                        "surface-container-low": "#1c1b1e",
+                        "on-error-container": "#ffdad6",
+                        "secondary-fixed": "#7df4ff",
+                        "on-primary-fixed-variant": "#74009f",
+                        "secondary": "#d3fbff",
+                        "on-tertiary-fixed-variant": "#095300",
+                        "on-error": "#690005",
+                        "inverse-primary": "#9900cf",
+                        "background": "#131315",
+                        "tertiary-fixed": "#79ff5b"
+                    },
+                    fontFamily: {
+                        "headline": ["Epilogue"],
+                        "body": ["Space Grotesk"],
+                        "label": ["Space Grotesk"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0px",
+                        "lg": "0px",
+                        "xl": "0px",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        .neon-grid {
+            background-image: 
+                linear-gradient(to right, rgba(189, 0, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(189, 0, 255, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .scanline {
+            background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.3) 50%);
+            background-size: 100% 4px;
+        }
+        .glow-primary {
+            box-shadow: 0 0 20px rgba(236, 178, 255, 0.3);
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #ecb2ff;
+            cursor: pointer;
+            border-radius: 0px;
+        }
+        .view-section {
+            display: none;
+        }
+        .view-section.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body neon-grid min-h-screen">
+
+<!-- TopAppBar -->
+<header class="sticky top-0 z-50 bg-surface-container-low/80 backdrop-blur-xl border-b border-outline-variant/20 px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+        <span class="font-headline text-xl font-black tracking-tighter cursor-pointer" onclick="showView('presets')">Sublex</span>
+    </div>
+    <div class="flex items-center gap-6">
+        <div class="flex gap-4">
+            <button id="lang-toggle" class="flex items-center gap-1 text-on-surface-variant hover:text-primary transition-colors">
+                <span class="text-[10px] font-black tracking-widest uppercase" id="current-lang">EN</span>
+                <span class="material-symbols-outlined text-sm">translate</span>
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- Presets View -->
+<main id="view-presets" class="view-section active max-w-7xl mx-auto p-6 lg:p-12 space-y-12 pb-24">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-l-4 border-primary pl-6">
+        <div>
+            <h1 class="font-headline text-6xl md:text-8xl font-black tracking-tighter leading-none" data-i18n="presets_title">PRESETS</h1>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-px bg-outline-variant/20 border border-outline-variant/20" id="presets-grid">
+        <!-- Dynamic Presets 2x2 -->
+    </div>
+</main>
+
+<!-- Editor View -->
+<main id="view-editor" class="view-section max-w-7xl mx-auto p-6 lg:p-12 space-y-12 pb-24 min-h-screen bg-surface/60 backdrop-blur-2xl">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-l-4 border-primary pl-6">
+        <div>
+            <p class="font-label text-primary text-sm tracking-[0.3em] mb-2" data-i18n="active_preset">ACTIVE_PRESET</p>
+            <h1 class="font-headline text-6xl md:text-8xl font-black tracking-tighter leading-none uppercase" id="editor-preset-name">CYBERPUNK_01</h1>
+        </div>
+        <div class="flex gap-4 mb-2">
+            <button class="px-6 py-2 bg-primary text-on-primary font-bold text-sm tracking-widest hover:glow-primary transition-all" onclick="saveChanges()" data-i18n="save_changes">SAVE_CHANGES</button>
+            <button class="px-6 py-2 border border-outline-variant text-on-surface font-bold text-sm tracking-widest hover:bg-surface-container-highest transition-all" onclick="showView('presets')" data-i18n="back">BACK</button>
+        </div>
+    </div>
+
+    <!-- Live Preview Section -->
+    <section class="space-y-4 pt-12">
+        <div class="relative aspect-video w-full bg-surface-container-lowest overflow-hidden group">
+            <div id="editor-preview-container" class="w-full h-full flex items-center justify-center bg-surface-container">
+                 <p id="preview-text" class="text-3xl font-black uppercase tracking-tighter" style="">PREVIEW_TEXT</p>
+            </div>
+            <div class="absolute inset-0 scanline opacity-20 pointer-events-none"></div>
+        </div>
+    </section>
+
+    <!-- Settings Controls (Placeholder for dynamic range sliders etc) -->
+    <div id="editor-controls" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Dynamic controls based on preset -->
+    </div>
+</main>
+
+<!-- Gallery View -->
+<main id="view-gallery" class="view-section max-w-7xl mx-auto p-6 lg:p-12 space-y-12 pb-24">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-l-4 border-primary pl-6">
+        <div>
+            <p class="font-label text-primary text-sm tracking-[0.3em] mb-2 uppercase">Archives</p>
+            <h1 class="font-headline text-6xl md:text-8xl font-black tracking-tighter leading-none" data-i18n="gallery_title">GALLERY</h1>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Gallery items -->
+        <div class="bg-surface-container h-64 flex items-center justify-center border border-outline-variant/20 italic text-on-surface-variant">No media found</div>
+    </div>
+</main>
+
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 bg-surface-container-lowest border-t border-outline-variant/20 h-20 px-6 flex items-center justify-around shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
+    <button class="nav-btn relative flex flex-col items-center gap-1 group w-1/4 h-full justify-center" onclick="showView('presets', this)">
+        <div class="active-indicator absolute top-0 left-1/2 -translate-x-1/2 w-10 h-0.5 bg-primary opacity-100 transition-all"></div>
+        <span class="nav-icon material-symbols-outlined text-primary text-2xl group-hover:scale-110 transition-transform">grid_view</span>
+        <span class="nav-label text-[10px] font-black uppercase tracking-widest text-primary">Presets</span>
+    </button>
+
+    <button class="nav-btn relative flex flex-col items-center gap-1 group w-1/4 h-full justify-center" onclick="showView('editor', this)">
+        <div class="active-indicator absolute top-0 left-1/2 -translate-x-1/2 w-10 h-0.5 bg-primary opacity-0 transition-all"></div>
+        <span class="nav-icon material-symbols-outlined text-on-surface-variant text-2xl group-hover:scale-110 transition-transform group-hover:text-primary">tune</span>
+        <span class="nav-label text-[10px] font-black uppercase tracking-widest text-on-surface-variant group-hover:text-primary">Editor</span>
+    </button>
+
+    <button class="nav-btn relative flex flex-col items-center gap-1 group w-1/4 h-full justify-center" onclick="showView('gallery', this)">
+        <div class="active-indicator absolute top-0 left-1/2 -translate-x-1/2 w-10 h-0.5 bg-primary opacity-0 transition-all"></div>
+        <span class="nav-icon material-symbols-outlined text-on-surface-variant text-2xl group-hover:scale-110 transition-transform group-hover:text-primary">video_library</span>
+        <span class="nav-label text-[10px] font-black uppercase tracking-widest text-on-surface-variant group-hover:text-primary">Gallery</span>
+    </button>
+</nav>
+
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.setHeaderColor('#131315');
+
+    const PRESETS = [
+        { id: '1', name: 'PRESET_01', cat: 'ITALIC', color: '#ffffff', css: 'font-style:italic; font-weight:800;', desc: 'White italic text, clean style.' },
+        { id: '2', name: 'PRESET_02', cat: 'BOLD', color: '#ffffff', css: 'font-weight:900; -webkit-text-stroke: 1px #000;', desc: 'Extra bold white text with outline.' },
+        { id: '3', name: 'PRESET_03', cat: 'KARAOKE', color: '#ffffff', css: 'font-weight:800; text-shadow: 2px 2px #00FF9933;', desc: 'Karaoke with blue highlight.' },
+        { id: '4', name: 'PRESET_04', cat: 'GLOW', color: '#FFD7FF', css: 'font-weight:800; text-shadow: 0 0 15px #FFD700;', desc: 'Yellow text with soft glow.' },
+        { id: '5', name: 'PRESET_05', cat: 'TIKTOK', color: '#ffffff', css: 'background:#E43F7B; color:#fff; padding:8px; font-style:italic; font-weight:800;', desc: 'Pink compact box style.' },
+        { id: '6', name: 'PRESET_06', cat: 'DISPLAY', color: '#ffffff', css: 'font-weight:700; font-family:sans-serif;', desc: 'SF Pro style bold white.' },
+        { id: '7', name: 'PRESET_07', cat: 'FADE', color: '#ffffff', css: 'font-weight:600; text-shadow: 0 0 10px rgba(255,255,255,0.5);', desc: 'White text with fade effect.' },
+        { id: '8', name: 'PRESET_08', cat: 'BOXED', color: '#ffffff', css: 'background:#000; color:#fff; padding:10px; border-radius:8px; font-weight:800;', desc: 'Black moving box karaoke.' },
+        { id: '9', name: 'PRESET_09', cat: 'CYBER', color: '#ffffff', css: 'background:#50C8F0; color:#fff; padding:6px; font-weight:700; text-shadow: 0 0 5px #fff;', desc: 'Light blue cyber glow.' },
+        { id: '10', name: 'PRESET_10', cat: 'NEON', color: '#39FF14', css: 'font-weight:900; text-shadow: 0 0 20px #39FF14;', desc: 'Toxic green neon glow.' },
+        { id: '11', name: 'PRESET_11', cat: 'KARAOKE', color: '#ffffff', css: 'font-weight:800; text-shadow: 2px 2px #0000FF66;', desc: 'Green karaoke highlight.' },
+        { id: '12', name: 'PRESET_12', cat: 'HISTORY', color: '#ffffff', css: 'border-bottom: 2px solid #fff; font-weight:800;', desc: 'Two lines history effect.' },
+        { id: '13', name: 'PRESET_13', cat: 'GLASS', color: '#ffffff', css: 'font-weight:900; mix-blend-mode: difference;', desc: 'Glass inversion effect.' },
+        { id: '14', name: 'PRESET_14', cat: 'PREMIUM', color: '#ffffff', css: 'font-weight:900; text-shadow: 0 0 10px rgba(255,255,255,0.3);', desc: 'Premium Montserrat style.' }
+    ];
+
+    const I18N = {
+        EN: {
+            presets_title: "PRESETS",
+            active_preset: "ACTIVE_PRESET",
+            save_changes: "SAVE_CHANGES",
+            back: "BACK",
+            gallery_title: "GALLERY",
+            nav_presets: "Presets",
+            nav_editor: "Editor",
+            nav_gallery: "Gallery",
+            pos_y: "Vertical_Pos",
+            pos_x: "Horizontal_Pos",
+            size: "Text_Size",
+            words: "Words_Per_Screen",
+            punct: "Punctuation",
+            color_text: "Text_Color",
+            color_box: "Box_Color",
+            anim_type: "Animation",
+            mask_int: "Mask_Intensity",
+            auto: "AUTO",
+            on: "ON",
+            off: "OFF",
+            weak: "WEAK",
+            medium: "MEDIUM",
+            strong: "STRONG",
+            default: "DEFAULT",
+            static: "STATIC",
+            fade: "FADE"
+        },
+        RU: {
+            presets_title: "ПРЕСЕТЫ",
+            active_preset: "АКТИВНЫЙ_ПРЕСЕТ",
+            save_changes: "СОХРАНИТЬ",
+            back: "НАЗАД",
+            gallery_title: "ГАЛЕРЕЯ",
+            nav_presets: "Пресеты",
+            nav_editor: "Редактор",
+            nav_gallery: "Галерея",
+            pos_y: "Вертик_Поз",
+            pos_x: "Гориз_Поз",
+            size: "Размер_Текста",
+            words: "Слов_На_Экран",
+            punct: "Пунктуация",
+            color_text: "Цвет_Текста",
+            color_box: "Цвет_Плашки",
+            anim_type: "Анимация",
+            mask_int: "Интенсивность",
+            auto: "АВТО",
+            on: "ВКЛ",
+            off: "ВЫКЛ",
+            weak: "СЛАБАЯ",
+            medium: "СРЕДНЯЯ",
+            strong: "СИЛЬНАЯ",
+            default: "ДВИЖЕНИЕ",
+            static: "СТАТИКА",
+            fade: "FADE"
+        }
+    };
+
+    function updateLanguage() {
+        const lang = currentLang;
+        document.getElementById('current-lang').innerText = lang;
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (I18N[lang][key]) el.innerText = I18N[lang][key];
+        });
+        // Update nav labels
+        document.querySelectorAll('.nav-label').forEach((el, i) => {
+            const keys = ['nav_presets', 'nav_editor', 'nav_gallery'];
+            el.innerText = I18N[lang][keys[i]];
+        });
+    }
+
+    let currentPreset = PRESETS[0];
+
+    function renderPresets() {
+        const grid = document.getElementById('presets-grid');
+        grid.innerHTML = '';
+        PRESETS.forEach((p, i) => {
+            const card = document.createElement('div');
+            card.className = "group border border-outline-variant/20 bg-surface p-4 flex flex-col gap-4 cursor-pointer hover:border-primary transition-all aspect-square relative overflow-hidden";
+            card.innerHTML = `
+                <div class="flex justify-between items-start z-10">
+                    <span class="font-label text-[10px] text-primary tracking-widest uppercase">${p.cat}</span>
+                    <div class="flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 bg-tertiary rounded-full animate-pulse"></span>
+                        <span class="font-label text-[8px] text-on-surface-variant uppercase">Online</span>
+                    </div>
+                </div>
+                <div class="flex-1 flex items-center justify-center relative bg-surface-container-low border border-outline-variant/10">
+                    <p class="text-xl font-black uppercase text-center px-2" style="${p.css} color:${p.color}">${p.name}</p>
+                    <div class="absolute inset-0 scanline opacity-10 pointer-events-none"></div>
+                </div>
+                <div class="z-10 border-t border-outline-variant/30 pt-4 mt-auto">
+                    <p class="font-headline text-lg font-black tracking-tighter uppercase leading-none">${p.name}</p>
+                </div>
+                <div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            `;
+            card.onclick = () => {
+                currentPreset = p;
+                openEditor(p);
+            };
+            grid.appendChild(card);
+        });
+    }
+
+    function showView(viewId, btn = null) {
+        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+        document.getElementById(`view-${viewId}`).classList.add('active');
+
+        // Nav active state
+        if (btn) {
+            document.querySelectorAll('.nav-btn').forEach(b => {
+                const icon = b.querySelector('.nav-icon');
+                const label = b.querySelector('.nav-label');
+                const indicator = b.querySelector('.active-indicator');
+                icon.classList.replace('text-primary', 'text-on-surface-variant');
+                label.classList.replace('text-primary', 'text-on-surface-variant');
+                indicator.style.opacity = '0';
+            });
+            const icon = btn.querySelector('.nav-icon');
+            const label = btn.querySelector('.nav-label');
+            const indicator = btn.querySelector('.active-indicator');
+            icon.classList.replace('text-on-surface-variant', 'text-primary');
+            label.classList.replace('text-on-surface-variant', 'text-primary');
+            indicator.style.opacity = '1';
+        }
+        
+        tg.HapticFeedback.impactOccurred('light');
+    }
+
+    function openEditor(p) {
+        document.getElementById('editor-preset-name').innerText = p.name;
+        const preview = document.getElementById('preview-text');
+        preview.innerText = "SAMPLE_TEXT";
+        preview.className = "text-center transition-all duration-300";
+        preview.style = p.css;
+        preview.style.color = p.color;
+
+        const controls = document.getElementById('editor-controls');
+        const lang = currentLang;
+        
+        // General Settings HTML
+        let html = `
+            <div class="space-y-6 bg-surface-container-low p-6 border border-outline-variant/20 col-span-1 md:col-span-2">
+                <p class="text-[10px] font-black tracking-[0.3em] text-primary uppercase mb-4">GENERAL_STATION</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Vertical Pos -->
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="pos_y">${I18N[lang].pos_y}</span>
+                            <span class="text-[10px] font-black text-primary" id="val-pos-y">50%</span>
+                        </div>
+                        <input type="range" id="input-pos-y" min="0" max="100" value="50" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                            oninput="document.getElementById('val-pos-y').innerText=this.value+'%'">
+                    </div>
+                    <!-- Horizontal Pos -->
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="pos_x">${I18N[lang].pos_x}</span>
+                            <span class="text-[10px] font-black text-primary" id="val-pos-x">CENTER</span>
+                        </div>
+                        <input type="range" id="input-pos-x" min="0" max="2" value="1" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                            oninput="const v=['LEFT','CENTER','RIGHT']; document.getElementById('val-pos-x').innerText=v[this.value]">
+                    </div>
+                    <!-- Text Size -->
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="size">${I18N[lang].size}</span>
+                            <span class="text-[10px] font-black text-primary" id="val-size">MEDIUM</span>
+                        </div>
+                        <input type="range" id="input-size" min="0" max="3" value="1" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                            oninput="const v=['SMALL','MEDIUM','LARGE','MAX']; document.getElementById('val-size').innerText=v[this.value]; document.getElementById('preview-text').style.fontSize=(30+this.value*15)+'px'">
+                    </div>
+                    <!-- Words count -->
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="words">${I18N[lang].words}</span>
+                            <span class="text-[10px] font-black text-primary" id="val-words">AUTO</span>
+                        </div>
+                        <input type="range" id="input-words" min="0" max="5" value="0" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                            oninput="document.getElementById('val-words').innerText=this.value == 0 ? 'AUTO' : this.value">
+                    </div>
+                </div>
+                <div class="pt-4 border-t border-outline-variant/10 flex items-center justify-between">
+                    <span class="text-xs font-bold" data-i18n="punct">${I18N[lang].punct}</span>
+                    <button id="btn-punct" class="px-4 py-1 border border-primary text-[10px] font-black text-primary hover:bg-primary/10 transition-all uppercase" data-state="off" onclick="this.innerText=this.innerText=='OFF'?'ON':'OFF'; this.dataset.state=this.innerText.toLowerCase()">OFF</button>
+                </div>
+            </div>
+        `;
+
+        // Preset-specific settings
+        if (p.id === '8') {
+             html += `
+                <div class="space-y-6 bg-surface-container-low p-6 border border-outline-variant/20">
+                    <p class="text-[10px] font-black tracking-[0.3em] text-primary uppercase mb-4">PRESET_CORE</p>
+                    <div class="flex flex-col gap-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold" data-i18n="color_box">${I18N[lang].color_box}</span>
+                            <input type="color" id="input-box-color" value="#000000" class="w-8 h-8 border-none bg-transparent cursor-pointer">
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="anim_type">${I18N[lang].anim_type}</span>
+                                <span class="text-[10px] font-black text-primary uppercase" id="val-anim">DEFAULT</span>
+                            </div>
+                            <input type="range" id="input-anim" min="0" max="2" value="0" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                                oninput="const v=['DEFAULT','STATIC','FADE']; document.getElementById('val-anim').innerText=v[this.value]">
+                        </div>
+                    </div>
+                </div>
+             `;
+        }
+
+        if (p.id === '13') {
+             html += `
+                <div class="space-y-6 bg-surface-container-low p-6 border border-outline-variant/20">
+                    <p class="text-[10px] font-black tracking-[0.3em] text-primary uppercase mb-4">BLEND_MATRIX</p>
+                    <div class="space-y-4">
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="mask_int">${I18N[lang].mask_int}</span>
+                                <span class="text-[10px] font-black text-primary uppercase" id="val-mask">MEDIUM</span>
+                            </div>
+                            <input type="range" id="input-mask" min="0" max="2" value="1" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                                oninput="const v=['WEAK','MEDIUM','STRONG']; document.getElementById('val-mask').innerText=v[this.value]">
+                        </div>
+                    </div>
+                </div>
+             `;
+        }
+
+        controls.innerHTML = html;
+        showView('editor');
+    }
+
+    function saveChanges() {
+        tg.HapticFeedback.notificationOccurred('success');
+        
+        const settings = {
+            preset: currentPreset.id,
+            action: 'save',
+            params: {
+                position_y: document.getElementById('input-pos-y')?.value,
+                position_x: document.getElementById('val-pos-x')?.innerText,
+                size: document.getElementById('val-size')?.innerText,
+                words_per_screen: document.getElementById('input-words')?.value,
+                punctuation: document.getElementById('btn-punct')?.dataset.state === 'on',
+                // Optional preset specific
+                box_color: document.getElementById('input-box-color')?.value,
+                animation_type: document.getElementById('val-anim')?.innerText.toLowerCase(),
+                mask_intensity: document.getElementById('val-mask')?.innerText.toLowerCase()
+            }
+        };
+
+        tg.sendData(JSON.stringify(settings));
+    }
+
+    let currentLang = 'EN';
+    document.getElementById('lang-toggle').onclick = () => {
+        currentLang = currentLang === 'EN' ? 'RU' : 'EN';
+        updateLanguage();
+        tg.HapticFeedback.impactOccurred('light');
+    };
+
+    updateLanguage();
+    renderPresets();
+</script>
+</body>
+</html>
