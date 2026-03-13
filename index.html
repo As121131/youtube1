@@ -80,16 +80,21 @@
     <style>
         .neon-grid {
             background-image: 
-                linear-gradient(to right, rgba(189, 0, 255, 0.05) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(189, 0, 255, 0.05) 1px, transparent 1px);
-            background-size: 40px 40px;
+                linear-gradient(to right, rgba(189, 0, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(189, 0, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            position: relative;
         }
-        .scanline {
-            background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.3) 50%);
-            background-size: 100% 4px;
+        .neon-grid::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(189, 0, 255, 0.03), transparent 70%);
+            pointer-events: none;
+            z-index: -1;
         }
         .glow-primary {
-            box-shadow: 0 0 20px rgba(236, 178, 255, 0.3);
+            box-shadow: 0 0 30px rgba(236, 178, 255, 0.4);
         }
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
@@ -485,20 +490,20 @@
         tg.HapticFeedback.notificationOccurred('success');
         
         const settings = {
-            preset: currentPreset.id,
+            preset: String(currentPreset.id), // Ensure string
             action: 'save',
             params: {
-                position_y: document.getElementById('input-pos-y')?.value,
-                position_x: document.getElementById('val-pos-x')?.innerText,
-                size: document.getElementById('val-size')?.innerText,
-                words_per_screen: document.getElementById('input-words')?.value,
+                position_y: Number(document.getElementById('input-pos-y')?.value),
+                position_x: String(document.getElementById('val-pos-x')?.innerText),
+                size: String(document.getElementById('val-size')?.innerText),
+                words_per_screen: Number(document.getElementById('input-words')?.value),
                 punctuation: document.getElementById('btn-punct')?.dataset.state === 'on',
                 uppercase: document.getElementById('btn-caps')?.dataset.state === 'on',
-                text_color: document.getElementById('input-text-color')?.value,
+                text_color: String(document.getElementById('input-text-color')?.value),
                 // Optional preset specific
-                box_color: document.getElementById('input-box-color')?.value,
-                animation_type: document.getElementById('val-anim')?.innerText.toLowerCase(),
-                mask_intensity: document.getElementById('val-mask')?.innerText.toLowerCase()
+                box_color: document.getElementById('input-box-color') ? String(document.getElementById('input-box-color').value) : null,
+                animation_type: document.getElementById('val-anim') ? String(document.getElementById('val-anim').innerText.toLowerCase()) : null,
+                mask_intensity: document.getElementById('val-mask') ? String(document.getElementById('val-mask').innerText.toLowerCase()) : null
             }
         };
 
