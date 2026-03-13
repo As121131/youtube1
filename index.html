@@ -472,19 +472,19 @@
                     <div class="space-y-3">
                         <div class="flex justify-between">
                             <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="words">${I18N[lang].words}</span>
-                            <span class="text-[10px] font-black text-primary" id="val-words">${initWords}</span>
+                            <span class="text-[10px] font-black text-primary uppercase" id="val-words">${initWords == 0 ? I18N[lang].auto : initWords}</span>
                         </div>
-                        <input type="range" id="input-words" min="1" max="5" value="${initWords}" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
-                            oninput="document.getElementById('val-words').innerText=this.value; updatePreviewText()">
+                        <input type="range" id="input-words" min="0" max="5" value="${initWords}" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                            oninput="document.getElementById('val-words').innerText=this.value == 0 ? I18N[currentLang].auto : this.value; updatePreviewText()">
                     </div>
                     <!-- Lines count -->
                     <div class="space-y-3">
                         <div class="flex justify-between">
                             <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="lines_count">${I18N[lang].lines_count}</span>
-                            <span class="text-[10px] font-black text-primary" id="val-lines">${initLines}</span>
+                            <span class="text-[10px] font-black text-primary uppercase" id="val-lines">${initLines == 0 ? I18N[lang].auto : initLines}</span>
                         </div>
-                        <input type="range" id="input-lines" min="1" max="3" value="${initLines}" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
-                            oninput="document.getElementById('val-lines').innerText=this.value; updatePreviewText()">
+                        <input type="range" id="input-lines" min="0" max="3" value="${initLines}" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                            oninput="document.getElementById('val-lines').innerText=this.value == 0 ? I18N[currentLang].auto : this.value; updatePreviewText()">
                     </div>
                 </div>
                 <div class="pt-4 border-t border-outline-variant/10 flex items-center justify-between">
@@ -621,7 +621,11 @@
             processedWords[0] = processedWords[0].charAt(0).toUpperCase() + processedWords[0].slice(1);
         }
         
-        let selectedWords = processedWords.slice(0, wordsCount);
+        // Для предпросмотра, если выбран режим AUTO (0), показываем 2 слова построчно
+        const previewWordsCount = wordsCount === 0 ? 2 : wordsCount;
+        const previewLinesCount = linesCount === 0 ? 1 : linesCount;
+        
+        let selectedWords = processedWords.slice(0, previewWordsCount);
         if (isPunct && selectedWords.length > 1) {
             selectedWords[0] = selectedWords[0] + ",";
         }
@@ -631,7 +635,7 @@
         const boxColor = document.getElementById('input-box-color')?.value || '#000000';
         const boxStyle = `background:${boxColor}; color:${textColor}; padding:2px 15px; border-radius:4px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline;`;
         
-        if (linesCount === 1 || wordsCount === 1) {
+        if (previewLinesCount === 1 || previewWordsCount === 1) {
             if (isPreset8) {
                 const first = selectedWords[0];
                 const rest = selectedWords.slice(1).join(' ');
@@ -639,8 +643,8 @@
             } else {
                 previewEl.innerHTML = selectedWords.join(' ');
             }
-        } else if (linesCount === 2) {
-            const mid = Math.ceil(wordsCount / 2);
+        } else if (previewLinesCount === 2) {
+            const mid = Math.ceil(previewWordsCount / 2);
             const line1Words = selectedWords.slice(0, mid);
             const line2Words = selectedWords.slice(mid);
             
@@ -653,8 +657,8 @@
             } else {
                 previewEl.innerHTML = `${line1Words.join(' ')}<br>${line2Words.join(' ')}`;
             }
-        } else if (linesCount === 3) {
-            if (wordsCount <= 2) {
+        } else if (previewLinesCount === 3) {
+            if (previewWordsCount <= 2) {
                 if (isPreset8) {
                     const first = selectedWords[0];
                     const rest = selectedWords.slice(1);
@@ -664,7 +668,7 @@
                     previewEl.innerHTML = selectedWords.join('<br>');
                 }
             } else {
-                const perLine = Math.ceil(wordsCount / 3);
+                const perLine = Math.ceil(previewWordsCount / 3);
                 const line1Words = selectedWords.slice(0, perLine);
                 const line2Words = selectedWords.slice(perLine, perLine * 2);
                 const line3Words = selectedWords.slice(perLine * 2);
