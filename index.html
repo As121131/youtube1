@@ -189,9 +189,9 @@
             </div>
 
             <div id="editor-preview-container" class="relative w-full h-full bg-surface-container-highest/30 overflow-hidden">
-                 <div id="preview-text-wrapper" class="absolute left-0 top-0 w-full h-full flex items-center justify-center pointer-events-none" style="transform: translate(0, 0);">
-                    <p id="preview-text" class="text-2xl font-black uppercase tracking-tighter text-center whitespace-normal break-words max-w-[80%] drop-shadow-lg" style="">SAMPLE_TEXT</p>
-                 </div>
+                  <div id="preview-text-wrapper" class="absolute pointer-events-none flex items-center justify-center text-center" style="left: 50%; top: 70%; transform: translate(-50%, -50%); transition: none;">
+                    <p id="preview-text" class="text-2xl font-black uppercase tracking-tighter text-center whitespace-normal break-words max-w-[90vw] drop-shadow-lg" style="transition: none;">SAMPLE_TEXT</p>
+                  </div>
                  <div class="absolute inset-0 scanline opacity-10 pointer-events-none"></div>
                  <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20 pointer-events-none"></div>
             </div>
@@ -686,23 +686,18 @@
             btn.classList.remove('border-tertiary', 'text-tertiary');
             btn.classList.add('border-primary', 'text-primary');
         }
-        tg.HapticFeedback.impactOccurred('light');
+        tg.HapticFeedback.impactOccurred('light')
     }
 
     function updateLivePreview() {
-        const textWrapper = document.getElementById('preview-text-wrapper');
-        if (!textWrapper) return;
-
-        const y = document.getElementById('input-pos-y')?.value || 50;
         const x = document.getElementById('input-pos-x')?.value || 50;
-        
-        // Use translate for smooth GPU-accelerated movement
-        // We calculate offsets from center
-        const offsetX = (x - 50);
-        const offsetY = (y - 50);
-        
-        textWrapper.style.transform = `translate(${offsetX}%, ${offsetY}%)`;
-        
+        const y = document.getElementById('input-pos-y')?.value || 70;
+        const wrapper = document.getElementById('preview-text-wrapper');
+        if (wrapper) {
+            wrapper.style.left = `${x}%`;
+            wrapper.style.top = `${y}%`;
+            wrapper.style.transform = `translate(-50%, -50%)`;
+        }
         updatePreviewText();
     }
 
@@ -726,7 +721,8 @@
                 words_per_screen: Number(document.getElementById('input-words')?.value || 0),
                 max_lines: Number(document.getElementById('input-lines')?.value || 1),
                 punctuation: document.getElementById('btn-punct')?.dataset.state === 'on',
-                uppercase: document.getElementById('btn-caps')?.dataset.state === 'on',
+                uppercase: document.getElementById('btn-all-caps')?.dataset.state === 'on',
+                capitalize_first: document.getElementById('btn-caps-first')?.dataset.state === 'on',
                 text_color: String(document.getElementById('input-text-color')?.value || '#ffffff'),
                 box_color: document.getElementById('input-box-color') ? String(document.getElementById('input-box-color').value) : null,
                 animation_type: document.getElementById('val-anim') ? String(document.getElementById('val-anim').innerText.toLowerCase()) : 'default',
