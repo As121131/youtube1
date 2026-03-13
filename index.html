@@ -274,17 +274,17 @@
             nav_presets: "Presets",
             nav_editor: "Editor",
             nav_gallery: "Gallery",
-            pos_y: "Vertical_Pos",
-            pos_x: "Horizontal_Pos",
-            size: "Text_Size",
-            words: "Words_Per_Screen",
+            pos_y: "Vertical Position",
+            pos_x: "Horizontal Position",
+            size: "Text Size",
+            words: "Words Per Screen",
             punct: "Punctuation",
-            color_text: "Text_Color",
-            color_box: "Box_Color",
-            lines_count: "Lines_Count",
+            color_text: "Text Color",
+            color_box: "Box Color",
+            lines_count: "Lines Count",
             anim_type: "Animation",
-            mask_int: "Mask_Intensity",
-            caps: "Uppercase_CAPS",
+            mask_int: "Mask Intensity",
+            caps: "Case settings",
             auto: "AUTO",
             on: "ON",
             off: "OFF",
@@ -306,17 +306,17 @@
             nav_presets: "Пресеты",
             nav_editor: "Редактор",
             nav_gallery: "Галерея",
-            pos_y: "Вертик_Поз",
-            pos_x: "Гориз_Поз",
-            size: "Размер_Текста",
-            words: "Слов_На_Экран",
-            punct: "Пунктуация",
-            color_text: "Цвет_Текста",
-            color_box: "Цвет_Плашки",
-            lines_count: "Кол_во_Строк",
+            pos_y: "Вертикальная позиция",
+            pos_x: "Горизонтальная позиция",
+            size: "Размер текста",
+            words: "Слов на экран",
+            punct: "Знаки препинания",
+            color_text: "Цвет текста",
+            color_box: "Цвет плашки",
+            lines_count: "Количество строк",
             anim_type: "Анимация",
             mask_int: "Интенсивность",
-            caps: "ЗАГЛАВНЫЕ_Буквы",
+            caps: "Регистр текста",
             auto: "АВТО",
             on: "ВКЛ",
             off: "ВЫКЛ",
@@ -425,6 +425,17 @@
         const controls = document.getElementById('editor-controls');
         const lang = currentLang;
         
+        // Initial values from URL or defaults
+        const urlParams = new URLSearchParams(window.location.search);
+        const initX = urlParams.get('x') || '50';
+        const initY = urlParams.get('y') || '70';
+        const initWords = urlParams.get('w') || '1';
+        const initLines = urlParams.get('l') || '1';
+        const initPunct = urlParams.get('punc') === 'true';
+        const initCaps = urlParams.get('caps') === 'true';
+        const initCapsFirst = urlParams.get('cf') === 'true';
+        const initSize = urlParams.get('s') || '1'; // 0, 1, 2, 3
+
         // General Settings HTML
         let html = `
             <div class="space-y-6 bg-surface-container-low p-6 border border-outline-variant/20 col-span-1 md:col-span-2">
@@ -434,18 +445,18 @@
                     <div class="space-y-3">
                         <div class="flex justify-between">
                             <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="pos_y">${I18N[lang].pos_y}</span>
-                            <span class="text-[10px] font-black text-primary" id="val-pos-y">50%</span>
+                            <span class="text-[10px] font-black text-primary" id="val-pos-y">${initY}%</span>
                         </div>
-                        <input type="range" id="input-pos-y" min="0" max="100" value="50" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                        <input type="range" id="input-pos-y" min="0" max="100" value="${initY}" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
                             oninput="document.getElementById('val-pos-y').innerText=this.value+'%'; updateLivePreview()">
                     </div>
                     <!-- Horizontal Pos -->
                     <div class="space-y-3">
                         <div class="flex justify-between">
                             <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="pos_x">${I18N[lang].pos_x}</span>
-                            <span class="text-[10px] font-black text-primary" id="val-pos-x">50%</span>
+                            <span class="text-[10px] font-black text-primary" id="val-pos-x">${initX}%</span>
                         </div>
-                        <input type="range" id="input-pos-x" min="0" max="100" value="50" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                        <input type="range" id="input-pos-x" min="0" max="100" value="${initX}" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
                             oninput="document.getElementById('val-pos-x').innerText=this.value+'%'; updateLivePreview()">
                     </div>
                     <!-- Text Size -->
@@ -454,39 +465,39 @@
                             <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="size">${I18N[lang].size}</span>
                             <span class="text-[10px] font-black text-primary" id="val-size">MEDIUM</span>
                         </div>
-                        <input type="range" id="input-size" min="0" max="3" value="1" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
-                            oninput="const v=['SMALL','MEDIUM','LARGE','MAX']; document.getElementById('val-size').innerText=v[this.value]; document.getElementById('preview-text').style.fontSize=(18+this.value*8)+'px'">
+                        <input type="range" id="input-size" min="0" max="3" value="${initSize}" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                            oninput="const v=['SMALL','MEDIUM','LARGE','MAX']; document.getElementById('val-size').innerText=v[this.value]; updatePreviewText()">
                     </div>
                     <!-- Words count -->
                     <div class="space-y-3">
                         <div class="flex justify-between">
                             <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="words">${I18N[lang].words}</span>
-                            <span class="text-[10px] font-black text-primary" id="val-words">1</span>
+                            <span class="text-[10px] font-black text-primary" id="val-words">${initWords}</span>
                         </div>
-                        <input type="range" id="input-words" min="1" max="5" value="1" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                        <input type="range" id="input-words" min="1" max="5" value="${initWords}" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
                             oninput="document.getElementById('val-words').innerText=this.value; updatePreviewText()">
                     </div>
                     <!-- Lines count -->
                     <div class="space-y-3">
                         <div class="flex justify-between">
                             <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="lines_count">${I18N[lang].lines_count}</span>
-                            <span class="text-[10px] font-black text-primary" id="val-lines">1</span>
+                            <span class="text-[10px] font-black text-primary" id="val-lines">${initLines}</span>
                         </div>
-                        <input type="range" id="input-lines" min="1" max="3" value="1" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                        <input type="range" id="input-lines" min="1" max="3" value="${initLines}" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
                             oninput="document.getElementById('val-lines').innerText=this.value; updatePreviewText()">
                     </div>
                 </div>
                 <div class="pt-4 border-t border-outline-variant/10 flex items-center justify-between">
                     <span class="text-xs font-bold" data-i18n="punct">${I18N[lang].punct}</span>
                     <div class="flex gap-2">
-                        <button id="btn-punct" class="px-3 py-1 border border-primary text-[10px] font-black text-primary hover:bg-primary/10 transition-all uppercase" data-state="off" data-i18n="btn_commas" onclick="toggleButton(this); updatePreviewText()">${I18N[lang].btn_commas}</button>
-                        <button id="btn-caps-first" class="px-3 py-1 border border-primary text-[10px] font-black text-primary hover:bg-primary/10 transition-all uppercase" data-state="off" data-i18n="btn_caps" onclick="toggleButton(this); updatePreviewText()">${I18N[lang].btn_caps}</button>
+                        <button id="btn-punct" class="px-3 py-1 border border-primary text-[10px] font-black text-primary hover:bg-primary/10 transition-all uppercase" data-state="${initPunct ? 'on' : 'off'}" data-i18n="btn_commas" onclick="toggleButton(this); updatePreviewText()">${I18N[lang].btn_commas}</button>
+                        <button id="btn-caps-first" class="px-3 py-1 border border-primary text-[10px] font-black text-primary hover:bg-primary/10 transition-all uppercase" data-state="${initCapsFirst ? 'on' : 'off'}" data-i18n="btn_caps" onclick="toggleButton(this); updatePreviewText()">${I18N[lang].btn_caps}</button>
                     </div>
                 </div>
 
                 <div class="pt-4 border-t border-outline-variant/10 flex items-center justify-between">
                     <span class="text-xs font-bold" data-i18n="caps">${I18N[lang].caps}</span>
-                    <button id="btn-all-caps" class="px-4 py-1 border border-primary text-[10px] font-black text-primary hover:bg-primary/10 transition-all uppercase" data-state="off" onclick="toggleButton(this); updatePreviewText()">OFF</button>
+                    <button id="btn-all-caps" class="px-4 py-1 border border-primary text-[10px] font-black text-primary hover:bg-primary/10 transition-all uppercase" data-state="${initCaps ? 'on' : 'off'}" onclick="toggleButton(this); updatePreviewText()">OFF</button>
                 </div>
 
                 <div class="pt-4 border-t border-outline-variant/10 flex items-center justify-between">
@@ -690,8 +701,11 @@
     }
 
     function updateLivePreview() {
-        const x = document.getElementById('input-pos-x')?.value || 50;
-        const y = document.getElementById('input-pos-y')?.value || 70;
+        const xEl = document.getElementById('input-pos-x');
+        const yEl = document.getElementById('input-pos-y');
+        const x = xEl ? xEl.value : 50;
+        const y = yEl ? yEl.value : 70;
+        
         const wrapper = document.getElementById('preview-text-wrapper');
         if (wrapper) {
             wrapper.style.left = `${x}%`;
@@ -746,9 +760,15 @@
         tg.HapticFeedback.impactOccurred('light');
     };
 
-    updateLanguage();
-    renderPresets();
-    showView('presets'); // Ensure initial view is visible
+    // Auto-open preset if specified in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const presetParam = urlParams.get('preset');
+    if (presetParam) {
+        const p = PRESETS.find(pr => pr.id === presetParam);
+        if (p) {
+            openEditor(p);
+        }
+    }
 </script>
 </body>
 </html>
