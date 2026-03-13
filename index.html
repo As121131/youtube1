@@ -618,7 +618,7 @@
         const isPreset8 = activePresetId === '8';
         const textColor = document.getElementById('input-text-color')?.value || '#ffffff';
         const boxColor = document.getElementById('input-box-color')?.value || '#000000';
-        const boxStyle = `background:${boxColor}; color:${textColor}; padding:1px 15px; border-radius:4px; margin-right:4px;`;
+        const boxStyle = `background:${boxColor}; color:${textColor}; padding:2px 15px; border-radius:4px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline;`;
         
         if (linesCount === 1 || wordsCount === 1) {
             if (isPreset8) {
