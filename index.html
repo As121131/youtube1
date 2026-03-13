@@ -189,7 +189,7 @@
             </div>
 
             <div id="editor-preview-container" class="relative w-full h-full bg-surface-container-highest/30 overflow-hidden">
-                 <div id="preview-text-wrapper" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full flex justify-center transition-all duration-200 pointer-events-none">
+                 <div id="preview-text-wrapper" class="absolute left-0 top-0 w-full h-full flex items-center justify-center pointer-events-none" style="transform: translate(0, 0);">
                     <p id="preview-text" class="text-2xl font-black uppercase tracking-tighter text-center whitespace-normal break-words max-w-[80%] drop-shadow-lg" style="">SAMPLE_TEXT</p>
                  </div>
                  <div class="absolute inset-0 scanline opacity-10 pointer-events-none"></div>
@@ -411,7 +411,7 @@
         const preview = document.getElementById('preview-text');
         if (preview) {
             preview.innerText = "SAMPLE_TEXT";
-            preview.className = "text-center transition-all duration-300";
+            preview.className = "text-center";
             // Important: use cssText for string styles, then specific props
             let css = p.css;
             if (p.id === '8') {
@@ -696,12 +696,12 @@
         const y = document.getElementById('input-pos-y')?.value || 50;
         const x = document.getElementById('input-pos-x')?.value || 50;
         
-        // Vertical
-        textWrapper.style.top = `${y}%`;
+        // Use translate for smooth GPU-accelerated movement
+        // We calculate offsets from center
+        const offsetX = (x - 50);
+        const offsetY = (y - 50);
         
-        // Horizontal
-        textWrapper.style.left = `${x}%`;
-        textWrapper.style.transform = `translate(-${x}%, -50%)`;
+        textWrapper.style.transform = `translate(${offsetX}%, ${offsetY}%)`;
         
         updatePreviewText();
     }
