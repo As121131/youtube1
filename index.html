@@ -192,11 +192,14 @@
                  <div id="preview-text-wrapper" class="absolute left-0 top-0 w-full h-full flex items-center justify-center pointer-events-none" style="transform: translate(0, 0);">
                     <!-- Floating box for Preset 8 -->
                     <div id="preview-active-box" class="absolute pointer-events-none opacity-0 transition-all duration-300" style="z-index: 0;"></div>
-                    <p id="preview-text" class="relative text-2xl font-black uppercase tracking-tighter text-center whitespace-normal break-words max-w-[80%]" style="z-index: 1;">SAMPLE_TEXT</p>
+                    <p id="preview-text" class="relative text-2xl font-black uppercase tracking-tighter text-center whitespace-normal break-words max-w-[80%] drop-shadow-lg" style="z-index: 1;">SAMPLE_TEXT</p>
                  </div>
                  <div class="absolute inset-0 scanline opacity-10 pointer-events-none"></div>
                  <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20 pointer-events-none"></div>
-            </div>
+                 
+             </div>
+        </div>
+    </section>
         </div>
     </section>
 
@@ -286,6 +289,7 @@
             lines_count: "Lines_Count",
             anim_type: "Animation",
             mask_int: "Mask_Intensity",
+            shadow_int: "Outline_Shadow",
             caps: "Uppercase_CAPS",
             auto: "AUTO",
             on: "ON",
@@ -298,7 +302,7 @@
             fade: "FADE",
             btn_commas: "COMMAS",
             btn_caps: "CAPITALIZED",
-            shadow: "SHADOW"
+            btn_animate: "Animate"
         },
         RU: {
             presets_title: "ПРЕСЕТЫ",
@@ -318,8 +322,9 @@
             color_box: "Цвет_Плашки",
             lines_count: "Кол_во_Строк",
             anim_type: "Анимация",
-            mask_int: "Интенсивность",
-            caps: "ЗАГЛАВНЫЕ_Буквы",
+            mask_int: "Интенсивность_маски",
+            shadow_int: "Тень_текста",
+            caps: "ЗАГЛАВНЫЕ_CAPS",
             auto: "АВТО",
             on: "ВКЛ",
             off: "ВЫКЛ",
@@ -331,7 +336,7 @@
             fade: "FADE",
             btn_commas: "ЗАПЯТЫЕ",
             btn_caps: "ЗАГЛАВНЫЕ",
-            shadow: "ТЕНЬ"
+            btn_animate: "Анимация"
         }
     };
 
@@ -479,15 +484,6 @@
                         <input type="range" id="input-lines" min="1" max="3" value="1" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
                             oninput="document.getElementById('val-lines').innerText=this.value; updatePreviewText()">
                     </div>
-                    <!-- Shadow Intensity -->
-                    <div class="space-y-3">
-                        <div class="flex justify-between">
-                            <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="shadow">${I18N[lang].shadow}</span>
-                            <span class="text-[10px] font-black text-primary" id="val-shadow">100%</span>
-                        </div>
-                        <input type="range" id="input-shadow" min="0" max="100" value="100" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
-                            oninput="document.getElementById('val-shadow').innerText=this.value+'%'; updatePreviewText()">
-                    </div>
                 </div>
                 <div class="pt-4 border-t border-outline-variant/10 flex items-center justify-between">
                     <span class="text-xs font-bold" data-i18n="punct">${I18N[lang].punct}</span>
@@ -506,6 +502,16 @@
                     <span class="text-xs font-bold" data-i18n="color_text">${I18N[lang].color_text}</span>
                     <input type="color" id="input-text-color" value="${p.color}" class="w-8 h-8 border-none bg-transparent cursor-pointer" oninput="document.getElementById('preview-text').style.color=this.value; updatePreviewText()">
                 </div>
+
+                <!-- Shadow slider -->
+                <div class="pt-4 border-t border-outline-variant/10 space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="shadow_int">${I18N[lang].shadow_int}</span>
+                        <span class="text-[10px] font-black text-primary" id="val-shadow">0%</span>
+                    </div>
+                    <input type="range" id="input-shadow" min="0" max="100" value="0" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                        oninput="document.getElementById('val-shadow').innerText=this.value+'%'; updatePreviewText()">
+                </div>
             </div>
         `;
 
@@ -518,6 +524,14 @@
                         <div class="flex justify-between items-center">
                             <span class="text-xs font-bold" data-i18n="color_box">${I18N[lang].color_box}</span>
                             <input type="color" id="input-box-color" value="#000000" class="w-8 h-8 border-none bg-transparent cursor-pointer" oninput="updatePreviewText()">
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="anim_type">${I18N[lang].anim_type}</span>
+                                <span class="text-[10px] font-black text-primary uppercase" id="val-anim">DEFAULT</span>
+                            </div>
+                            <input type="range" id="input-anim" min="0" max="2" value="0" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                                oninput="const v=['DEFAULT','STATIC','FADE']; document.getElementById('val-anim').innerText=v[this.value]">
                         </div>
                     </div>
                 </div>
@@ -603,16 +617,9 @@
 
         const wordsCount = parseInt(document.getElementById('input-words')?.value || 1);
         const linesCount = parseInt(document.getElementById('input-lines')?.value || 1);
-        const shadowVal = parseInt(document.getElementById('input-shadow')?.value || 100);
         const isAllCaps = document.getElementById('btn-all-caps')?.dataset.state === 'on';
         const isCapsFirst = document.getElementById('btn-caps-first')?.dataset.state === 'on';
         const isPunct = document.getElementById('btn-punct')?.dataset.state === 'on';
-        
-        // Dynamic Shadow (from photo: soft, dark, slightly offset)
-        const sSize = (shadowVal / 100) * 4;
-        const sBlur = (shadowVal / 100) * 12;
-        const sAlpha = (shadowVal / 100) * 0.9;
-        previewEl.style.textShadow = `0px ${sSize}px ${sBlur}px rgba(0,0,0,${sAlpha})`;
         
         let allWords = ["sample", "text", "here", "is", "great"];
         let processedWords = allWords.slice(0, wordsCount);
@@ -630,7 +637,19 @@
         const isPreset8 = activePresetId === '8';
         const isKaraokeCategory = preset.cat === 'KARAOKE' || preset.cat === 'TIKTOK';
         const boxEl = document.getElementById('preview-active-box');
+        const shadowInt = parseInt(document.getElementById('input-shadow')?.value || 0);
         
+        // Update shadow of the main text
+        if (previewEl) {
+            if (shadowInt > 0) {
+                const blur = shadowInt / 10;
+                const alpha = shadowInt / 100;
+                previewEl.style.textShadow = `0 0 ${blur}px rgba(0,0,0,${alpha}), 0 0 ${blur*1.5}px rgba(0,0,0,${alpha})`;
+            } else {
+                previewEl.style.textShadow = 'none';
+            }
+        }
+
         // Default state: hide box
         if (boxEl) boxEl.style.opacity = '0';
 
@@ -718,8 +737,27 @@
 
     let isPreviewAnimating = false;
     async function playPreviewAnimation() {
-        // Disabled per user request
-        return;
+        if (isPreviewAnimating) return;
+        isPreviewAnimating = true;
+        
+        const wordsCount = parseInt(document.getElementById('input-words')?.value || 1);
+        const btn = document.getElementById('btn-play-anim');
+        if (btn) btn.style.transform = 'scale(0.8)';
+        
+        tg.HapticFeedback.impactOccurred('medium');
+
+        for (let i = 0; i < wordsCount; i++) {
+            updatePreviewText(i);
+            const delay = activePresetId === '8' ? 700 : 500;
+            await new Promise(r => setTimeout(r, delay));
+        }
+        
+        // Final state
+        await new Promise(r => setTimeout(r, 800));
+        updatePreviewText(-1);
+        
+        if (btn) btn.style.transform = 'scale(1)';
+        isPreviewAnimating = false;
     }
 
     function toggleButton(btn) {
@@ -781,8 +819,9 @@
                 uppercase: document.getElementById('btn-caps')?.dataset.state === 'on',
                 text_color: String(document.getElementById('input-text-color')?.value || '#ffffff'),
                 box_color: document.getElementById('input-box-color') ? String(document.getElementById('input-box-color').value) : null,
-                shadow_intensity: Number(document.getElementById('input-shadow')?.value || 100) / 100,
-                mask_intensity: document.getElementById('val-mask') ? String(document.getElementById('val-mask').innerText.toLowerCase()) : 'medium'
+                animation_type: document.getElementById('val-anim') ? String(document.getElementById('val-anim').innerText.toLowerCase()) : 'default',
+                mask_intensity: document.getElementById('val-mask') ? String(document.getElementById('val-mask').innerText.toLowerCase()) : 'medium',
+                shadow_intensity: Number(document.getElementById('input-shadow')?.value || 0)
             }
         };
 
