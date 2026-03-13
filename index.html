@@ -760,6 +760,9 @@
         tg.HapticFeedback.impactOccurred('light');
     };
 
+    updateLanguage();
+    renderPresets();
+
     // Auto-open preset if specified in URL
     const urlParams = new URLSearchParams(window.location.search);
     const presetParam = urlParams.get('preset');
@@ -767,7 +770,11 @@
         const p = PRESETS.find(pr => pr.id === presetParam);
         if (p) {
             openEditor(p);
+        } else {
+            showView('presets');
         }
+    } else {
+        showView('presets');
     }
 </script>
 </body>
