@@ -167,19 +167,19 @@
 
     <!-- Live Preview Section -->
     <section class="space-y-4 pt-12">
-        <div id="preview-frame" class="relative aspect-video w-full bg-surface-container-lowest overflow-hidden group border border-outline-variant/10 transition-all duration-500 shadow-2xl mx-auto max-w-[500px]">
+        <div id="preview-frame" class="relative aspect-video w-full bg-surface-container-lowest transition-all duration-500 shadow-2xl mx-auto max-w-[500px]">
             <!-- Aspect Ratio Selector (Top Right) -->
-            <div class="absolute top-3 right-3 flex gap-0 z-30 bg-black/80 backdrop-blur-xl border border-white/10 rounded-sm overflow-hidden shadow-xl">
+            <div class="absolute top-3 right-3 flex gap-0 z-50 bg-black/80 backdrop-blur-xl border border-white/10 rounded-sm overflow-visible shadow-xl">
                 <button onclick="setAspectRatio('9:16')" class="ratio-btn px-2.5 py-1.5 text-[9px] font-black tracking-tighter hover:bg-white/5 transition-all text-on-surface-variant border-r border-white/5" data-ratio="9:16">9:16</button>
                 <button onclick="setAspectRatio('1:1')" class="ratio-btn px-2.5 py-1.5 text-[9px] font-black tracking-tighter hover:bg-white/5 transition-all text-on-surface-variant border-r border-white/5" data-ratio="1:1">1:1</button>
                 <button onclick="setAspectRatio('16:9')" class="ratio-btn px-2.5 py-1.5 text-[9px] font-black tracking-tighter hover:bg-white/5 transition-all text-primary border-r border-white/5" data-ratio="16:9">16:9</button>
                 
-                <div class="relative group/more">
-                    <button id="ratio-more-btn" class="px-2.5 py-1.5 text-[9px] font-black hover:bg-white/5 transition-all text-on-surface-variant flex items-center justify-center">
-                        <span class="material-symbols-outlined text-xs">more_horiz</span>
+                <div class="relative">
+                    <button id="ratio-more-btn" onclick="toggleRatioDropdown(event)" class="px-2.5 py-1.5 text-[9px] font-black hover:bg-white/5 transition-all text-on-surface-variant flex items-center justify-center">
+                        <span class="material-symbols-outlined text-xs pointer-events-none">more_horiz</span>
                     </button>
                     <!-- Small Dropdown -->
-                    <div id="ratio-dropdown" class="absolute top-full right-0 mt-1 bg-surface-container-high border border-outline-variant/30 hidden flex-col w-24 shadow-2xl z-50">
+                    <div id="ratio-dropdown" class="absolute top-full right-0 mt-1 bg-surface-container-high border border-outline-variant/30 hidden flex-col w-24 shadow-2xl z-[60]">
                         <button onclick="setAspectRatio('4:5')" class="ratio-btn px-3 py-2 text-[9px] font-black text-left hover:bg-primary/10 transition-colors border-b border-outline-variant/10 text-on-surface-variant" data-ratio="4:5">4:5 (IG)</button>
                         <button onclick="setAspectRatio('4:3')" class="ratio-btn px-3 py-2 text-[9px] font-black text-left hover:bg-primary/10 transition-colors border-b border-outline-variant/10 text-on-surface-variant" data-ratio="4:3">4:3 (Classic)</button>
                         <button onclick="setAspectRatio('2:3')" class="ratio-btn px-3 py-2 text-[9px] font-black text-left hover:bg-primary/10 transition-colors border-b border-outline-variant/10 text-on-surface-variant" data-ratio="2:3">2:3</button>
@@ -188,14 +188,13 @@
                 </div>
             </div>
 
-            <div id="editor-preview-container" class="relative w-full h-full bg-surface-container-highest/30">
+            <div id="editor-preview-container" class="relative w-full h-full bg-surface-container-highest/30 overflow-hidden">
                  <div id="preview-text-wrapper" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full flex justify-center transition-all duration-200 pointer-events-none">
                     <p id="preview-text" class="text-2xl font-black uppercase tracking-tighter text-center whitespace-normal break-words max-w-[80%] drop-shadow-lg" style="">SAMPLE_TEXT</p>
                  </div>
+                 <div class="absolute inset-0 scanline opacity-10 pointer-events-none"></div>
+                 <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20 pointer-events-none"></div>
             </div>
-            
-            <div class="absolute inset-0 scanline opacity-10 pointer-events-none"></div>
-            <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20 pointer-events-none"></div>
         </div>
     </section>
 
@@ -549,15 +548,17 @@
         tg.HapticFeedback.impactOccurred('light');
     }
 
-    // Toggle dropdown and global click
-    document.addEventListener('click', (e) => {
+    function toggleRatioDropdown(e) {
+        e.stopPropagation();
         const dropdown = document.getElementById('ratio-dropdown');
-        const btn = document.getElementById('ratio-more-btn');
-        if (btn?.contains(e.target)) {
-            dropdown?.classList.toggle('hidden');
-        } else if (dropdown && !dropdown.contains(e.target)) {
-            dropdown.classList.add('hidden');
-        }
+        dropdown?.classList.toggle('hidden');
+        tg.HapticFeedback.impactOccurred('light');
+    }
+
+    // Global click to close dropdown
+    document.addEventListener('click', () => {
+        const dropdown = document.getElementById('ratio-dropdown');
+        if (dropdown) dropdown.classList.add('hidden');
     });
 
     function updateLivePreview() {
