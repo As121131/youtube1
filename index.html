@@ -188,18 +188,13 @@
                 </div>
             </div>
 
-             <div id="editor-preview-container" class="relative w-full h-full bg-surface-container-highest/30 overflow-hidden">
+            <div id="editor-preview-container" class="relative w-full h-full bg-surface-container-highest/30 overflow-hidden">
                  <div id="preview-text-wrapper" class="absolute left-0 top-0 w-full h-full flex items-center justify-center pointer-events-none" style="transform: translate(0, 0);">
-                    <!-- Floating box for Preset 8 -->
-                    <div id="preview-active-box" class="absolute pointer-events-none opacity-0 transition-all duration-300" style="z-index: 0;"></div>
-                    <p id="preview-text" class="relative text-2xl font-black uppercase tracking-tighter text-center whitespace-normal break-words max-w-[80%] drop-shadow-lg" style="z-index: 1;">SAMPLE_TEXT</p>
+                    <p id="preview-text" class="text-2xl font-black uppercase tracking-tighter text-center whitespace-normal break-words max-w-[80%] drop-shadow-lg" style="">SAMPLE_TEXT</p>
                  </div>
                  <div class="absolute inset-0 scanline opacity-10 pointer-events-none"></div>
                  <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20 pointer-events-none"></div>
-                 
-             </div>
-        </div>
-    </section>
+            </div>
         </div>
     </section>
 
@@ -289,7 +284,6 @@
             lines_count: "Lines_Count",
             anim_type: "Animation",
             mask_int: "Mask_Intensity",
-            shadow_int: "Outline_Shadow",
             caps: "Uppercase_CAPS",
             auto: "AUTO",
             on: "ON",
@@ -301,8 +295,7 @@
             static: "STATIC",
             fade: "FADE",
             btn_commas: "COMMAS",
-            btn_caps: "CAPITALIZED",
-            btn_animate: "Animate"
+            btn_caps: "CAPITALIZED"
         },
         RU: {
             presets_title: "ПРЕСЕТЫ",
@@ -322,9 +315,8 @@
             color_box: "Цвет_Плашки",
             lines_count: "Кол_во_Строк",
             anim_type: "Анимация",
-            mask_int: "Интенсивность_маски",
-            shadow_int: "Тень_текста",
-            caps: "ЗАГЛАВНЫЕ_CAPS",
+            mask_int: "Интенсивность",
+            caps: "ЗАГЛАВНЫЕ_Буквы",
             auto: "АВТО",
             on: "ВКЛ",
             off: "ВЫКЛ",
@@ -335,8 +327,7 @@
             static: "СТАТИКА",
             fade: "FADE",
             btn_commas: "ЗАПЯТЫЕ",
-            btn_caps: "ЗАГЛАВНЫЕ",
-            btn_animate: "Анимация"
+            btn_caps: "ЗАГЛАВНЫЕ"
         }
     };
 
@@ -419,10 +410,8 @@
         document.getElementById('editor-preset-name').innerText = p.name;
         const preview = document.getElementById('preview-text');
         if (preview) {
-            preview.innerText = p.name === 'PRESET_08' ? "SAMPLE" : "SAMPLE_TEXT";
-            // Ensure necessary classes for layering (z-index works only on positioned elements)
-            preview.className = "relative z-10 text-2xl font-black uppercase tracking-tighter text-center whitespace-normal break-words max-w-[80%] drop-shadow-lg";
-            
+            preview.innerText = "SAMPLE_TEXT";
+            preview.className = "text-center";
             // Important: use cssText for string styles, then specific props
             let css = p.css;
             if (p.id === '8') {
@@ -503,16 +492,6 @@
                 <div class="pt-4 border-t border-outline-variant/10 flex items-center justify-between">
                     <span class="text-xs font-bold" data-i18n="color_text">${I18N[lang].color_text}</span>
                     <input type="color" id="input-text-color" value="${p.color}" class="w-8 h-8 border-none bg-transparent cursor-pointer" oninput="document.getElementById('preview-text').style.color=this.value; updatePreviewText()">
-                </div>
-
-                <!-- Shadow slider -->
-                <div class="pt-4 border-t border-outline-variant/10 space-y-3">
-                    <div class="flex justify-between">
-                        <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="shadow_int">${I18N[lang].shadow_int}</span>
-                        <span class="text-[10px] font-black text-primary" id="val-shadow">0%</span>
-                    </div>
-                    <input type="range" id="input-shadow" min="0" max="100" value="0" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
-                        oninput="document.getElementById('val-shadow').innerText=this.value+'%'; updatePreviewText()">
                 </div>
             </div>
         `;
@@ -610,17 +589,10 @@
         if (dropdown) dropdown.classList.add('hidden');
     });
 
-    function updatePreviewText(activeIdx) {
+    function updatePreviewText() {
         const previewEl = document.getElementById('preview-text');
-        // For Preset 8, if not animating, show box on the first word for style preview
-        if (activeIdx === undefined && activePresetId === '8') activeIdx = 0;
-        if (activeIdx === undefined) activeIdx = -1;
-        
         if (!previewEl) return;
         
-        const preset = PRESETS.find(p => String(p.id) === activePresetId);
-        if (!preset) return;
-
         const wordsCount = parseInt(document.getElementById('input-words')?.value || 1);
         const linesCount = parseInt(document.getElementById('input-lines')?.value || 1);
         const isAllCaps = document.getElementById('btn-all-caps')?.dataset.state === 'on';
@@ -628,7 +600,9 @@
         const isPunct = document.getElementById('btn-punct')?.dataset.state === 'on';
         
         let allWords = ["sample", "text", "here", "is", "great"];
-        let processedWords = allWords.slice(0, wordsCount);
+        
+        // 1. Process transformations
+        let processedWords = [...allWords];
         
         if (isAllCaps) {
             processedWords = processedWords.map(w => w.toUpperCase());
@@ -636,134 +610,64 @@
             processedWords[0] = processedWords[0].charAt(0).toUpperCase() + processedWords[0].slice(1);
         }
         
-        if (isPunct && processedWords.length > 1) {
-            processedWords[0] = processedWords[0] + ",";
+        let selectedWords = processedWords.slice(0, wordsCount);
+        if (isPunct && selectedWords.length > 1) {
+            selectedWords[0] = selectedWords[0] + ",";
         }
         
         const isPreset8 = activePresetId === '8';
-        const isKaraokeCategory = preset.cat === 'KARAOKE' || preset.cat === 'TIKTOK';
-        const boxEl = document.getElementById('preview-active-box');
-        const shadowInt = parseInt(document.getElementById('input-shadow')?.value || 0);
+        const textColor = document.getElementById('input-text-color')?.value || '#ffffff';
+        const boxColor = document.getElementById('input-box-color')?.value || '#000000';
+        const boxStyle = `background:${boxColor}; color:${textColor}; padding:2px 15px; border-radius:4px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline;`;
         
-        // Update shadow of the main text
-        if (previewEl) {
-            if (shadowInt > 0) {
-                const blur = shadowInt / 10;
-                const alpha = shadowInt / 100;
-                previewEl.style.textShadow = `0 0 ${blur}px rgba(0,0,0,${alpha}), 0 0 ${blur*1.5}px rgba(0,0,0,${alpha})`;
+        if (linesCount === 1 || wordsCount === 1) {
+            if (isPreset8) {
+                const first = selectedWords[0];
+                const rest = selectedWords.slice(1).join(' ');
+                previewEl.innerHTML = `<span style="${boxStyle}">${first}</span>${rest ? ' ' + rest : ''}`;
             } else {
-                previewEl.style.textShadow = 'none';
+                previewEl.innerHTML = selectedWords.join(' ');
             }
-        }
-
-        // Default state: hide box
-        if (boxEl) boxEl.style.opacity = '0';
-
-        // Helper to wrap word
-        const wrap = (word, idx) => {
-            let style = "";
-            let classes = "preview-word inline-block transition-all duration-300";
+        } else if (linesCount === 2) {
+            const mid = Math.ceil(wordsCount / 2);
+            const line1Words = selectedWords.slice(0, mid);
+            const line2Words = selectedWords.slice(mid);
             
-            if (activeIdx !== -1) {
-                if (idx < activeIdx) {
-                    // History words (already spoken)
-                    if (isKaraokeCategory || isPreset8) {
-                        // Stay visible but maybe dimmer? For now stay as is.
-                        if (isKaraokeCategory && preset.cat !== 'TIKTOK') {
-                            style = `color: #00FF99; opacity: 0.6;`; // Karaoke "past" style
-                        }
-                    } 
-                } else if (idx === activeIdx) {
-                    // Current active word
-                    if (isKaraokeCategory) {
-                        if (preset.cat === 'TIKTOK') {
-                             style = `background:#E43F7B; color:#fff; padding:4px 8px; border-radius:4px; box-shadow: 0 4px 15px rgba(228,63,123,0.4);`;
-                        } else {
-                             style = `color: #00FF99; text-shadow: 0 0 12px #00FF99, 0 0 20px #00FF99; transform: scale(1.1);`;
-                        }
-                    }
+            if (isPreset8) {
+                const first = line1Words[0];
+                const rest1 = line1Words.slice(1).join(' ');
+                const l1 = `<span style="${boxStyle}">${first}</span>${rest1 ? ' ' + rest1 : ''}`;
+                const l2 = line2Words.join(' ');
+                previewEl.innerHTML = `${l1}<br>${l2}`;
+            } else {
+                previewEl.innerHTML = `${line1Words.join(' ')}<br>${line2Words.join(' ')}`;
+            }
+        } else if (linesCount === 3) {
+            if (wordsCount <= 2) {
+                if (isPreset8) {
+                    const first = selectedWords[0];
+                    const rest = selectedWords.slice(1);
+                    const l1 = `<span style="${boxStyle}">${first}</span>`;
+                    previewEl.innerHTML = [l1, ...rest].join('<br>');
                 } else {
-                    // Future words
-                    if (!isKaraokeCategory && !isPreset8) {
-                        classes += " opacity-0 scale-90 translate-y-2";
-                    } else if (isKaraokeCategory && preset.cat !== 'TIKTOK') {
-                         style = `opacity: 0.4;`; // Karaoke future
-                    }
+                    previewEl.innerHTML = selectedWords.join('<br>');
+                }
+            } else {
+                const perLine = Math.ceil(wordsCount / 3);
+                const line1Words = selectedWords.slice(0, perLine);
+                const line2Words = selectedWords.slice(perLine, perLine * 2);
+                const line3Words = selectedWords.slice(perLine * 2);
+                
+                if (isPreset8) {
+                    const first = line1Words[0];
+                    const rest1 = line1Words.slice(1).join(' ');
+                    const l1 = `<span style="${boxStyle}">${first}</span>${rest1 ? ' ' + rest1 : ''}`;
+                    previewEl.innerHTML = `${l1}<br>${line2Words.join(' ')}<br>${line3Words.join(' ')}`;
+                } else {
+                    previewEl.innerHTML = `${line1Words.join(' ')}<br>${line2Words.join(' ')}<br>${line3Words.join(' ')}`;
                 }
             }
-
-            return `<span id="word-${idx}" class="${classes}" style="${style}">${word}</span>`;
-        };
-
-        if (linesCount === 1 || processedWords.length <= 1) {
-            previewEl.innerHTML = processedWords.map((w, i) => wrap(w, i)).join(' ');
-        } else {
-            const mid = Math.ceil(processedWords.length / linesCount);
-            let lineGroups = [];
-            for (let i = 0; i < linesCount; i++) {
-                lineGroups.push(processedWords.slice(i * mid, (i + 1) * mid).map((w, j) => wrap(w, i * mid + j)).join(' '));
-            }
-            previewEl.innerHTML = lineGroups.join('<br>');
         }
-
-        // PRESET 8: Moving Box Logic
-        if (isPreset8 && activeIdx !== -1 && boxEl) {
-            const activeWord = document.getElementById(`word-${activeIdx}`);
-            if (activeWord) {
-                const animType = document.getElementById('val-anim')?.innerText || 'DEFAULT';
-                
-                const rect = activeWord.getBoundingClientRect();
-                const containerRect = document.getElementById('preview-text-wrapper').getBoundingClientRect();
-                
-                const boxColor = document.getElementById('input-box-color')?.value || '#000000';
-                const textColor = document.getElementById('input-text-color')?.value || '#ffffff';
-                
-                boxEl.style.background = boxColor;
-                boxEl.style.width = `${rect.width + 30}px`;
-                boxEl.style.height = `${rect.height + 6}px`;
-                boxEl.style.left = `${rect.left - containerRect.left - 15}px`;
-                boxEl.style.top = `${rect.top - containerRect.top - 3}px`;
-                boxEl.style.borderRadius = '6px';
-                boxEl.style.opacity = '1';
-                boxEl.style.boxShadow = `0 8px 30px rgba(0,0,0,0.5)`;
-                
-                if (animType === 'STATIC') {
-                    boxEl.style.transition = 'none';
-                } else if (animType === 'FADE') {
-                    boxEl.style.transition = 'opacity 0.2s ease-in-out';
-                } else {
-                    boxEl.style.transition = 'all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-                }
-                
-                activeWord.style.color = textColor;
-                activeWord.style.transition = 'color 0.2s';
-            }
-        }
-    }
-
-    let isPreviewAnimating = false;
-    async function playPreviewAnimation() {
-        if (isPreviewAnimating) return;
-        isPreviewAnimating = true;
-        
-        const wordsCount = parseInt(document.getElementById('input-words')?.value || 1);
-        const btn = document.getElementById('btn-play-anim');
-        if (btn) btn.style.transform = 'scale(0.8)';
-        
-        tg.HapticFeedback.impactOccurred('medium');
-
-        for (let i = 0; i < wordsCount; i++) {
-            updatePreviewText(i);
-            const delay = activePresetId === '8' ? 700 : 500;
-            await new Promise(r => setTimeout(r, delay));
-        }
-        
-        // Final state
-        await new Promise(r => setTimeout(r, 800));
-        updatePreviewText(-1);
-        
-        if (btn) btn.style.transform = 'scale(1)';
-        isPreviewAnimating = false;
     }
 
     function toggleButton(btn) {
@@ -826,8 +730,7 @@
                 text_color: String(document.getElementById('input-text-color')?.value || '#ffffff'),
                 box_color: document.getElementById('input-box-color') ? String(document.getElementById('input-box-color').value) : null,
                 animation_type: document.getElementById('val-anim') ? String(document.getElementById('val-anim').innerText.toLowerCase()) : 'default',
-                mask_intensity: document.getElementById('val-mask') ? String(document.getElementById('val-mask').innerText.toLowerCase()) : 'medium',
-                shadow_intensity: Number(document.getElementById('input-shadow')?.value || 0)
+                mask_intensity: document.getElementById('val-mask') ? String(document.getElementById('val-mask').innerText.toLowerCase()) : 'medium'
             }
         };
 
