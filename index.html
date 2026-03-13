@@ -80,21 +80,21 @@
     <style>
         .neon-grid {
             background-image: 
-                linear-gradient(to right, rgba(189, 0, 255, 0.1) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(189, 0, 255, 0.1) 1px, transparent 1px);
-            background-size: 50px 50px;
+                linear-gradient(to right, rgba(236, 178, 255, 0.35) 1.5px, transparent 1.5px),
+                linear-gradient(to bottom, rgba(236, 178, 255, 0.35) 1.5px, transparent 1.5px);
+            background-size: 60px 60px;
             position: relative;
         }
-        .neon-grid::before {
+        .neon-grid::after {
             content: '';
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(circle at 50% 50%, rgba(189, 0, 255, 0.03), transparent 70%);
+            background: radial-gradient(circle at 50% 50%, rgba(236, 178, 255, 0.12), transparent 90%);
             pointer-events: none;
             z-index: -1;
         }
         .glow-primary {
-            box-shadow: 0 0 30px rgba(236, 178, 255, 0.4);
+            box-shadow: 0 0 60px rgba(236, 178, 255, 0.6);
         }
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
@@ -215,7 +215,9 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
     tg.setHeaderColor('#131315');
-    tg.MainButton.onClick(saveChanges);
+    // Hide standard blue button - we use our own design
+    tg.MainButton.hide();
+    tg.MainButton.setText("-"); // Reset standard text
 
     const PRESETS = [
         { id: '1', name: 'PRESET_01', cat: 'ITALIC', color: '#ffffff', css: 'font-style:italic; font-weight:800;', desc: 'White italic text, clean style.' },
@@ -337,8 +339,6 @@
             card.onclick = () => {
                 currentPreset = p;
                 openEditor(p);
-                tg.MainButton.setText(I18N[currentLang].save_changes);
-                tg.MainButton.show();
             };
             grid.appendChild(card);
         });
@@ -347,10 +347,6 @@
     function showView(viewId, btn = null) {
         document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
         document.getElementById(`view-${viewId}`).classList.add('active');
-        
-        if (viewId !== 'editor') {
-            tg.MainButton.hide();
-        }
 
         // Nav active state
         if (btn) {
@@ -486,7 +482,14 @@
         showView('editor');
     }
 
-    function saveChanges() {
+    function saveChanges(event) {
+        const btn = event instanceof Event ? event.currentTarget : document.querySelector('[onclick="saveChanges()"]');
+        if (btn) {
+            btn.innerText = "SAVING...";
+            btn.classList.add('animate-pulse');
+            btn.disabled = true;
+        }
+        
         tg.HapticFeedback.notificationOccurred('success');
         
         const settings = {
