@@ -194,6 +194,11 @@
                  </div>
                  <div class="absolute inset-0 scanline opacity-10 pointer-events-none"></div>
                  <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20 pointer-events-none"></div>
+                 
+                 <!-- Play Animation Button -->
+                 <button onclick="playPreviewAnimation()" class="absolute bottom-3 right-3 z-50 w-10 h-10 bg-primary/20 backdrop-blur-xl border border-primary/30 text-primary rounded-full hover:bg-primary hover:text-on-primary transition-all shadow-lg active:scale-90 flex items-center justify-center group" id="btn-play-anim">
+                    <span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">play_arrow</span>
+                 </button>
             </div>
         </div>
     </section>
@@ -295,7 +300,8 @@
             static: "STATIC",
             fade: "FADE",
             btn_commas: "COMMAS",
-            btn_caps: "CAPITALIZED"
+            btn_caps: "CAPITALIZED",
+            btn_animate: "Animate"
         },
         RU: {
             presets_title: "ПРЕСЕТЫ",
@@ -327,7 +333,8 @@
             static: "СТАТИКА",
             fade: "FADE",
             btn_commas: "ЗАПЯТЫЕ",
-            btn_caps: "ЗАГЛАВНЫЕ"
+            btn_caps: "ЗАГЛАВНЫЕ",
+            btn_animate: "Анимация"
         }
     };
 
@@ -589,7 +596,7 @@
         if (dropdown) dropdown.classList.add('hidden');
     });
 
-    function updatePreviewText() {
+    function updatePreviewText(activeIdx = -1) {
         const previewEl = document.getElementById('preview-text');
         if (!previewEl) return;
         
@@ -620,54 +627,49 @@
         const boxColor = document.getElementById('input-box-color')?.value || '#000000';
         const boxStyle = `background:${boxColor}; color:${textColor}; padding:2px 15px; border-radius:4px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline;`;
         
+        // Helper to wrap word if it's the active one for Preset 8
+        const wrap = (word, idx) => (isPreset8 && idx === activeIdx) ? `<span style="${boxStyle}">${word}</span>` : word;
+
         if (linesCount === 1 || wordsCount === 1) {
-            if (isPreset8) {
-                const first = selectedWords[0];
-                const rest = selectedWords.slice(1).join(' ');
-                previewEl.innerHTML = `<span style="${boxStyle}">${first}</span>${rest ? ' ' + rest : ''}`;
-            } else {
-                previewEl.innerHTML = selectedWords.join(' ');
-            }
+            previewEl.innerHTML = selectedWords.map((w, i) => wrap(w, i)).join(' ');
         } else if (linesCount === 2) {
             const mid = Math.ceil(wordsCount / 2);
-            const line1Words = selectedWords.slice(0, mid);
-            const line2Words = selectedWords.slice(mid);
-            
-            if (isPreset8) {
-                const first = line1Words[0];
-                const rest1 = line1Words.slice(1).join(' ');
-                const l1 = `<span style="${boxStyle}">${first}</span>${rest1 ? ' ' + rest1 : ''}`;
-                const l2 = line2Words.join(' ');
-                previewEl.innerHTML = `${l1}<br>${l2}`;
-            } else {
-                previewEl.innerHTML = `${line1Words.join(' ')}<br>${line2Words.join(' ')}`;
-            }
+            const line1 = selectedWords.slice(0, mid).map((w, i) => wrap(w, i)).join(' ');
+            const line2 = selectedWords.slice(mid).map((w, i) => wrap(w, i + mid)).join(' ');
+            previewEl.innerHTML = `${line1}<br>${line2}`;
         } else if (linesCount === 3) {
             if (wordsCount <= 2) {
-                if (isPreset8) {
-                    const first = selectedWords[0];
-                    const rest = selectedWords.slice(1);
-                    const l1 = `<span style="${boxStyle}">${first}</span>`;
-                    previewEl.innerHTML = [l1, ...rest].join('<br>');
-                } else {
-                    previewEl.innerHTML = selectedWords.join('<br>');
-                }
+                previewEl.innerHTML = selectedWords.map((w, i) => wrap(w, i)).join('<br>');
             } else {
                 const perLine = Math.ceil(wordsCount / 3);
-                const line1Words = selectedWords.slice(0, perLine);
-                const line2Words = selectedWords.slice(perLine, perLine * 2);
-                const line3Words = selectedWords.slice(perLine * 2);
-                
-                if (isPreset8) {
-                    const first = line1Words[0];
-                    const rest1 = line1Words.slice(1).join(' ');
-                    const l1 = `<span style="${boxStyle}">${first}</span>${rest1 ? ' ' + rest1 : ''}`;
-                    previewEl.innerHTML = `${l1}<br>${line2Words.join(' ')}<br>${line3Words.join(' ')}`;
-                } else {
-                    previewEl.innerHTML = `${line1Words.join(' ')}<br>${line2Words.join(' ')}<br>${line3Words.join(' ')}`;
-                }
+                const l1 = selectedWords.slice(0, perLine).map((w, i) => wrap(w, i)).join(' ');
+                const l2 = selectedWords.slice(perLine, perLine * 2).map((w, i) => wrap(w, i + perLine)).join(' ');
+                const l3 = selectedWords.slice(perLine * 2).map((w, i) => wrap(w, i + perLine * 2)).join(' ');
+                previewEl.innerHTML = `${l1}<br>${l2}<br>${l3}`;
             }
         }
+    }
+
+    let isPreviewAnimating = false;
+    async function playPreviewAnimation() {
+        if (isPreviewAnimating) return;
+        isPreviewAnimating = true;
+        
+        const wordsCount = parseInt(document.getElementById('input-words')?.value || 1);
+        const btn = document.getElementById('btn-play-anim');
+        if (btn) btn.style.opacity = '0.5';
+        
+        tg.HapticFeedback.impactOccurred('medium');
+
+        for (let i = 0; i < wordsCount; i++) {
+            updatePreviewText(i);
+            await new Promise(r => setTimeout(r, 500)); // 500ms per word
+        }
+        
+        // Return to first word highlight
+        updatePreviewText(-1); // No word highlighted after animation
+        if (btn) btn.style.opacity = '1';
+        isPreviewAnimating = false;
     }
 
     function toggleButton(btn) {
