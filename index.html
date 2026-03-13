@@ -483,7 +483,7 @@
 
                 <div class="pt-4 border-t border-outline-variant/10 flex items-center justify-between">
                     <span class="text-xs font-bold" data-i18n="color_text">${I18N[lang].color_text}</span>
-                    <input type="color" id="input-text-color" value="${p.color}" class="w-8 h-8 border-none bg-transparent cursor-pointer" oninput="document.getElementById('preview-text').style.color=this.value">
+                    <input type="color" id="input-text-color" value="${p.color}" class="w-8 h-8 border-none bg-transparent cursor-pointer" oninput="document.getElementById('preview-text').style.color=this.value; updatePreviewText()">
                 </div>
             </div>
         `;
@@ -496,7 +496,7 @@
                     <div class="flex flex-col gap-4">
                         <div class="flex justify-between items-center">
                             <span class="text-xs font-bold" data-i18n="color_box">${I18N[lang].color_box}</span>
-                            <input type="color" id="input-box-color" value="#000000" class="w-8 h-8 border-none bg-transparent cursor-pointer">
+                            <input type="color" id="input-box-color" value="#000000" class="w-8 h-8 border-none bg-transparent cursor-pointer" oninput="updatePreviewText()">
                         </div>
                         <div class="space-y-3">
                             <div class="flex justify-between">
@@ -592,7 +592,9 @@
         const selectedWords = allWords.slice(0, wordsCount);
         
         const isPreset8 = activePresetId === '8';
-        const boxStyle = 'background:#000; color:#fff; padding:2px 8px; border-radius:4px; margin-right:4px;';
+        const textColor = document.getElementById('input-text-color')?.value || '#ffffff';
+        const boxColor = document.getElementById('input-box-color')?.value || '#000000';
+        const boxStyle = `background:${boxColor}; color:${textColor}; padding:1px 15px; border-radius:4px; margin-right:4px;`;
         
         if (linesCount === 1 || wordsCount === 1) {
             if (isPreset8) {
