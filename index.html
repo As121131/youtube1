@@ -399,14 +399,22 @@
         tg.HapticFeedback.impactOccurred('light');
     }
 
+    let activePresetId = '1';
+
     function openEditor(p) {
+        activePresetId = String(p.id);
         document.getElementById('editor-preset-name').innerText = p.name;
         const preview = document.getElementById('preview-text');
         if (preview) {
             preview.innerText = "SAMPLE_TEXT";
             preview.className = "text-center transition-all duration-300";
             // Important: use cssText for string styles, then specific props
-            preview.style.cssText = p.css;
+            let css = p.css;
+            if (p.id === '8') {
+                // Remove the full-box background from the wrapper for 8th preset preview
+                css = css.replace(/background:[^;]+;?/, '').replace(/padding:[^;]+;?/, '');
+            }
+            preview.style.cssText = css;
             preview.style.color = p.color;
         }
 
@@ -583,22 +591,55 @@
         const allWords = ["SAMPLE", "TEXT", "HERE", "IS", "GREAT"];
         const selectedWords = allWords.slice(0, wordsCount);
         
+        const isPreset8 = activePresetId === '8';
+        const boxStyle = 'background:#000; color:#fff; padding:2px 8px; border-radius:4px; margin-right:4px;';
+        
         if (linesCount === 1 || wordsCount === 1) {
-            previewEl.innerHTML = selectedWords.join(' ');
+            if (isPreset8) {
+                const first = selectedWords[0];
+                const rest = selectedWords.slice(1).join(' ');
+                previewEl.innerHTML = `<span style="${boxStyle}">${first}</span>${rest ? ' ' + rest : ''}`;
+            } else {
+                previewEl.innerHTML = selectedWords.join(' ');
+            }
         } else if (linesCount === 2) {
             const mid = Math.ceil(wordsCount / 2);
-            const line1 = selectedWords.slice(0, mid).join(' ');
-            const line2 = selectedWords.slice(mid).join(' ');
-            previewEl.innerHTML = `${line1}<br>${line2}`;
+            const line1Words = selectedWords.slice(0, mid);
+            const line2Words = selectedWords.slice(mid);
+            
+            if (isPreset8) {
+                const first = line1Words[0];
+                const rest1 = line1Words.slice(1).join(' ');
+                const l1 = `<span style="${boxStyle}">${first}</span>${rest1 ? ' ' + rest1 : ''}`;
+                const l2 = line2Words.join(' ');
+                previewEl.innerHTML = `${l1}<br>${l2}`;
+            } else {
+                previewEl.innerHTML = `${line1Words.join(' ')}<br>${line2Words.join(' ')}`;
+            }
         } else if (linesCount === 3) {
             if (wordsCount <= 2) {
-                previewEl.innerHTML = selectedWords.join('<br>');
+                if (isPreset8) {
+                    const first = selectedWords[0];
+                    const rest = selectedWords.slice(1);
+                    const l1 = `<span style="${boxStyle}">${first}</span>`;
+                    previewEl.innerHTML = [l1, ...rest].join('<br>');
+                } else {
+                    previewEl.innerHTML = selectedWords.join('<br>');
+                }
             } else {
                 const perLine = Math.ceil(wordsCount / 3);
-                const line1 = selectedWords.slice(0, perLine).join(' ');
-                const line2 = selectedWords.slice(perLine, perLine * 2).join(' ');
-                const line3 = selectedWords.slice(perLine * 2).join(' ');
-                previewEl.innerHTML = `${line1}<br>${line2}<br>${line3}`;
+                const line1Words = selectedWords.slice(0, perLine);
+                const line2Words = selectedWords.slice(perLine, perLine * 2);
+                const line3Words = selectedWords.slice(perLine * 2);
+                
+                if (isPreset8) {
+                    const first = line1Words[0];
+                    const rest1 = line1Words.slice(1).join(' ');
+                    const l1 = `<span style="${boxStyle}">${first}</span>${rest1 ? ' ' + rest1 : ''}`;
+                    previewEl.innerHTML = `${l1}<br>${line2Words.join(' ')}<br>${line3Words.join(' ')}`;
+                } else {
+                    previewEl.innerHTML = `${line1Words.join(' ')}<br>${line2Words.join(' ')}<br>${line3Words.join(' ')}`;
+                }
             }
         }
     }
