@@ -419,8 +419,10 @@
         document.getElementById('editor-preset-name').innerText = p.name;
         const preview = document.getElementById('preview-text');
         if (preview) {
-            preview.innerText = "SAMPLE_TEXT";
-            preview.className = "text-center";
+            preview.innerText = p.name === 'PRESET_08' ? "SAMPLE" : "SAMPLE_TEXT";
+            // Ensure necessary classes for layering (z-index works only on positioned elements)
+            preview.className = "relative z-10 text-2xl font-black uppercase tracking-tighter text-center whitespace-normal break-words max-w-[80%] drop-shadow-lg";
+            
             // Important: use cssText for string styles, then specific props
             let css = p.css;
             if (p.id === '8') {
