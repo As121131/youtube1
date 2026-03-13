@@ -446,13 +446,8 @@
                             oninput="const v=['SMALL','MEDIUM','LARGE','MAX']; document.getElementById('val-size').innerText=v[this.value]; document.getElementById('preview-text').style.fontSize=(18+this.value*8)+'px'">
                     </div>
                     <!-- Words count -->
-                    <div class="space-y-3">
-                        <div class="flex justify-between">
-                            <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="words">${I18N[lang].words}</span>
-                            <span class="text-[10px] font-black text-primary" id="val-words">AUTO</span>
-                        </div>
-                        <input type="range" id="input-words" min="0" max="5" value="0" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
-                            oninput="document.getElementById('val-words').innerText=this.value == 0 ? 'AUTO' : this.value">
+                        <input type="range" id="input-words" min="1" max="5" value="1" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                            oninput="document.getElementById('val-words').innerText=this.value; updatePreviewText()">
                     </div>
                     <!-- Lines count -->
                     <div class="space-y-3">
@@ -461,7 +456,7 @@
                             <span class="text-[10px] font-black text-primary" id="val-lines">1</span>
                         </div>
                         <input type="range" id="input-lines" min="1" max="3" value="1" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
-                            oninput="document.getElementById('val-lines').innerText=this.value">
+                            oninput="document.getElementById('val-lines').innerText=this.value; updatePreviewText()">
                     </div>
                 </div>
                 <div class="pt-4 border-t border-outline-variant/10 flex items-center justify-between">
@@ -573,6 +568,36 @@
         if (dropdown) dropdown.classList.add('hidden');
     });
 
+    function updatePreviewText() {
+        const previewEl = document.getElementById('preview-text');
+        if (!previewEl) return;
+        
+        const wordsCount = parseInt(document.getElementById('input-words')?.value || 1);
+        const linesCount = parseInt(document.getElementById('input-lines')?.value || 1);
+        
+        const allWords = ["SAMPLE", "TEXT", "HERE", "IS", "GREAT"];
+        const selectedWords = allWords.slice(0, wordsCount);
+        
+        if (linesCount === 1 || wordsCount === 1) {
+            previewEl.innerHTML = selectedWords.join(' ');
+        } else if (linesCount === 2) {
+            const mid = Math.ceil(wordsCount / 2);
+            const line1 = selectedWords.slice(0, mid).join(' ');
+            const line2 = selectedWords.slice(mid).join(' ');
+            previewEl.innerHTML = `${line1}<br>${line2}`;
+        } else if (linesCount === 3) {
+            if (wordsCount <= 2) {
+                previewEl.innerHTML = selectedWords.join('<br>');
+            } else {
+                const perLine = Math.ceil(wordsCount / 3);
+                const line1 = selectedWords.slice(0, perLine).join(' ');
+                const line2 = selectedWords.slice(perLine, perLine * 2).join(' ');
+                const line3 = selectedWords.slice(perLine * 2).join(' ');
+                previewEl.innerHTML = `${line1}<br>${line2}<br>${line3}`;
+            }
+        }
+    }
+
     function updateLivePreview() {
         const textWrapper = document.getElementById('preview-text-wrapper');
         if (!textWrapper) return;
@@ -597,6 +622,8 @@
             textWrapper.style.transform = `translate(-50%, -50%)`;
             textWrapper.style.justifyContent = 'center';
         }
+        
+        updatePreviewText();
     }
 
     function saveChanges(event) {
