@@ -323,7 +323,9 @@
             strong: "СИЛЬНАЯ",
             default: "ДВИЖЕНИЕ",
             static: "СТАТИКА",
-            fade: "FADE"
+            fade: "FADE",
+            btn_commas: "ЗАПЯТЫЕ",
+            btn_caps: "ЗАГЛАВНЫЕ"
         }
     };
 
@@ -474,11 +476,10 @@
                 </div>
                 <div class="pt-4 border-t border-outline-variant/10 flex items-center justify-between">
                     <span class="text-xs font-bold" data-i18n="punct">${I18N[lang].punct}</span>
-                    <button id="btn-punct" class="px-4 py-1 border border-primary text-[10px] font-black text-primary hover:bg-primary/10 transition-all uppercase" data-state="off" onclick="this.innerText=this.innerText=='OFF'?'ON':'OFF'; this.dataset.state=this.innerText.toLowerCase()">OFF</button>
-                </div>
-                <div class="pt-4 border-t border-outline-variant/10 flex items-center justify-between">
-                    <span class="text-xs font-bold" data-i18n="caps">${I18N[lang].caps}</span>
-                    <button id="btn-caps" class="px-4 py-1 border border-primary text-[10px] font-black text-primary hover:bg-primary/10 transition-all uppercase" data-state="off" onclick="this.innerText=this.innerText=='OFF'?'ON':'OFF'; this.dataset.state=this.innerText.toLowerCase(); document.getElementById('preview-text').style.textTransform=this.innerText=='ON'?'uppercase':'none'">OFF</button>
+                    <div class="flex gap-2">
+                        <button id="btn-punct" class="px-3 py-1 border border-primary text-[10px] font-black text-primary hover:bg-primary/10 transition-all uppercase" data-state="off" onclick="toggleButton(this); updatePreviewText()">Запятые</button>
+                        <button id="btn-caps" class="px-3 py-1 border border-primary text-[10px] font-black text-primary hover:bg-primary/10 transition-all uppercase" data-state="off" onclick="toggleButton(this); updatePreviewText()">Заглавные</button>
+                    </div>
                 </div>
 
                 <div class="pt-4 border-t border-outline-variant/10 flex items-center justify-between">
@@ -587,9 +588,17 @@
         
         const wordsCount = parseInt(document.getElementById('input-words')?.value || 1);
         const linesCount = parseInt(document.getElementById('input-lines')?.value || 1);
+        const isCaps = document.getElementById('btn-caps')?.dataset.state === 'on';
+        const isPunct = document.getElementById('btn-punct')?.dataset.state === 'on';
         
-        const allWords = ["SAMPLE", "TEXT", "HERE", "IS", "GREAT"];
-        const selectedWords = allWords.slice(0, wordsCount);
+        let allWords = ["SAMPLE", "TEXT", "HERE", "IS", "GREAT"];
+        if (isCaps) allWords = allWords.map(w => w.toUpperCase());
+        else allWords = allWords.map(w => w.toLowerCase());
+        
+        let selectedWords = allWords.slice(0, wordsCount);
+        if (isPunct) {
+            selectedWords = selectedWords.map((w, i) => i === 1 ? w + "," : w);
+        }
         
         const isPreset8 = activePresetId === '8';
         const textColor = document.getElementById('input-text-color')?.value || '#ffffff';
@@ -644,6 +653,19 @@
                 }
             }
         }
+    }
+
+    function toggleButton(btn) {
+        const newState = btn.dataset.state === 'on' ? 'off' : 'on';
+        btn.dataset.state = newState;
+        if (newState === 'on') {
+            btn.classList.add('border-tertiary', 'text-tertiary');
+            btn.classList.remove('border-primary', 'text-primary');
+        } else {
+            btn.classList.remove('border-tertiary', 'text-tertiary');
+            btn.classList.add('border-primary', 'text-primary');
+        }
+        tg.HapticFeedback.impactOccurred('light');
     }
 
     function updateLivePreview() {
