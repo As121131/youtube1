@@ -609,6 +609,13 @@
         const isAllCaps = document.getElementById('btn-all-caps')?.dataset.state === 'on';
         const isCapsFirst = document.getElementById('btn-caps-first')?.dataset.state === 'on';
         const isPunct = document.getElementById('btn-punct')?.dataset.state === 'on';
+        const sizeVal = parseInt(document.getElementById('input-size')?.value || 1);
+        
+        // Apply text scaling based on size slider (0=small, 1=medium, 2=large, 3=max)
+        const scaleMap = { 0: 0.75, 1: 1.0, 2: 1.25, 3: 1.6 };
+        const scale = scaleMap[sizeVal] || 1.0;
+        previewEl.style.transform = `scale(${scale})`;
+        previewEl.style.transformOrigin = 'center center';
         
         let allWords = ["sample", "text", "here", "is", "great"];
         
