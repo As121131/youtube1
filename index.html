@@ -608,8 +608,12 @@
         if (dropdown) dropdown.classList.add('hidden');
     });
 
-    function updatePreviewText(activeIdx = -1) {
+    function updatePreviewText(activeIdx) {
         const previewEl = document.getElementById('preview-text');
+        // For Preset 8, if not animating, show box on the first word for style preview
+        if (activeIdx === undefined && activePresetId === '8') activeIdx = 0;
+        if (activeIdx === undefined) activeIdx = -1;
+        
         if (!previewEl) return;
         
         const preset = PRESETS.find(p => String(p.id) === activePresetId);
