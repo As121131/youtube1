@@ -490,7 +490,7 @@
     function saveChanges(event) {
         const btn = event instanceof Event ? event.currentTarget : document.querySelector('[onclick="saveChanges()"]');
         if (btn) {
-            btn.innerText = "SAVING...";
+            btn.innerText = lang === 'RU' ? "СОХРАНЕНИЕ..." : "SAVING...";
             btn.classList.add('animate-pulse');
             btn.disabled = true;
         }
@@ -498,25 +498,29 @@
         tg.HapticFeedback.notificationOccurred('success');
         
         const settings = {
-            preset: String(currentPreset.id), // Ensure string
+            preset: String(currentPreset.id), // Передаем ID (например '8')
             action: 'save',
             params: {
-                position_y: Number(document.getElementById('input-pos-y')?.value),
-                position_x: String(document.getElementById('val-pos-x')?.innerText),
-                size: String(document.getElementById('val-size')?.innerText),
-                words_per_screen: Number(document.getElementById('input-words')?.value),
+                position_y: Number(document.getElementById('input-pos-y')?.value || 50),
+                position_x: String(document.getElementById('val-pos-x')?.innerText || 'CENTER').toLowerCase(),
+                size: String(document.getElementById('val-size')?.innerText || 'MEDIUM').toLowerCase(),
+                words_per_screen: Number(document.getElementById('input-words')?.value || 0),
                 punctuation: document.getElementById('btn-punct')?.dataset.state === 'on',
                 uppercase: document.getElementById('btn-caps')?.dataset.state === 'on',
-                text_color: String(document.getElementById('input-text-color')?.value),
-                // Optional preset specific
+                text_color: String(document.getElementById('input-text-color')?.value || '#ffffff'),
                 box_color: document.getElementById('input-box-color') ? String(document.getElementById('input-box-color').value) : null,
-                animation_type: document.getElementById('val-anim') ? String(document.getElementById('val-anim').innerText.toLowerCase()) : null,
-                mask_intensity: document.getElementById('val-mask') ? String(document.getElementById('val-mask').innerText.toLowerCase()) : null
+                animation_type: document.getElementById('val-anim') ? String(document.getElementById('val-anim').innerText.toLowerCase()) : 'default',
+                mask_intensity: document.getElementById('val-mask') ? String(document.getElementById('val-mask').innerText.toLowerCase()) : 'medium'
             }
         };
 
+        console.log("Saving settings:", settings);
         tg.sendData(JSON.stringify(settings));
-        tg.close();
+        
+        // Закрываем через небольшую паузу для плавности
+        setTimeout(() => {
+            tg.close();
+        }, 150);
     }
 
     let currentLang = 'EN';
