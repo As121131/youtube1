@@ -443,10 +443,10 @@
                     <div class="space-y-3">
                         <div class="flex justify-between">
                             <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="pos_x">${I18N[lang].pos_x}</span>
-                            <span class="text-[10px] font-black text-primary" id="val-pos-x">CENTER</span>
+                            <span class="text-[10px] font-black text-primary" id="val-pos-x">50%</span>
                         </div>
-                        <input type="range" id="input-pos-x" min="0" max="2" value="1" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
-                            oninput="const v=['LEFT','CENTER','RIGHT']; document.getElementById('val-pos-x').innerText=v[this.value]; updateLivePreview()">
+                        <input type="range" id="input-pos-x" min="0" max="100" value="50" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                            oninput="document.getElementById('val-pos-x').innerText=this.value+'%'; updateLivePreview()">
                     </div>
                     <!-- Text Size -->
                     <div class="space-y-3">
@@ -694,25 +694,14 @@
         if (!textWrapper) return;
 
         const y = document.getElementById('input-pos-y')?.value || 50;
-        const xVal = document.getElementById('val-pos-x')?.innerText || 'CENTER';
+        const x = document.getElementById('input-pos-x')?.value || 50;
         
         // Vertical
         textWrapper.style.top = `${y}%`;
         
         // Horizontal
-        if (xVal === 'LEFT') {
-            textWrapper.style.left = '10%';
-            textWrapper.style.transform = `translate(0, -50%)`;
-            textWrapper.style.justifyContent = 'flex-start';
-        } else if (xVal === 'RIGHT') {
-            textWrapper.style.left = '90%';
-            textWrapper.style.transform = `translate(-100%, -50%)`;
-            textWrapper.style.justifyContent = 'flex-end';
-        } else {
-            textWrapper.style.left = '50%';
-            textWrapper.style.transform = `translate(-50%, -50%)`;
-            textWrapper.style.justifyContent = 'center';
-        }
+        textWrapper.style.left = `${x}%`;
+        textWrapper.style.transform = `translate(-${x}%, -50%)`;
         
         updatePreviewText();
     }
@@ -728,11 +717,11 @@
         tg.HapticFeedback.notificationOccurred('success');
         
         const settings = {
-            preset: String(currentPreset.id), // Передаем ID (например '8')
+            preset: String(activePresetId), 
             action: 'save',
             params: {
                 position_y: Number(document.getElementById('input-pos-y')?.value || 50),
-                position_x: String(document.getElementById('val-pos-x')?.innerText || 'CENTER').toLowerCase(),
+                position_x: Number(document.getElementById('input-pos-x')?.value || 50),
                 size: String(document.getElementById('val-size')?.innerText || 'MEDIUM').toLowerCase(),
                 words_per_screen: Number(document.getElementById('input-words')?.value || 0),
                 max_lines: Number(document.getElementById('input-lines')?.value || 1),
