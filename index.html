@@ -188,9 +188,11 @@
                 </div>
             </div>
 
-            <div id="editor-preview-container" class="relative w-full h-full bg-surface-container-highest/30 overflow-hidden">
+             <div id="editor-preview-container" class="relative w-full h-full bg-surface-container-highest/30 overflow-hidden">
                  <div id="preview-text-wrapper" class="absolute left-0 top-0 w-full h-full flex items-center justify-center pointer-events-none" style="transform: translate(0, 0);">
-                    <p id="preview-text" class="text-2xl font-black uppercase tracking-tighter text-center whitespace-normal break-words max-w-[80%] drop-shadow-lg" style="">SAMPLE_TEXT</p>
+                    <!-- Floating box for Preset 8 -->
+                    <div id="preview-active-box" class="absolute pointer-events-none opacity-0 transition-all duration-300" style="z-index: 0;"></div>
+                    <p id="preview-text" class="relative text-2xl font-black uppercase tracking-tighter text-center whitespace-normal break-words max-w-[80%] drop-shadow-lg" style="z-index: 1;">SAMPLE_TEXT</p>
                  </div>
                  <div class="absolute inset-0 scanline opacity-10 pointer-events-none"></div>
                  <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20 pointer-events-none"></div>
@@ -600,6 +602,9 @@
         const previewEl = document.getElementById('preview-text');
         if (!previewEl) return;
         
+        const preset = PRESETS.find(p => String(p.id) === activePresetId);
+        if (!preset) return;
+
         const wordsCount = parseInt(document.getElementById('input-words')?.value || 1);
         const linesCount = parseInt(document.getElementById('input-lines')?.value || 1);
         const isAllCaps = document.getElementById('btn-all-caps')?.dataset.state === 'on';
@@ -607,9 +612,7 @@
         const isPunct = document.getElementById('btn-punct')?.dataset.state === 'on';
         
         let allWords = ["sample", "text", "here", "is", "great"];
-        
-        // 1. Process transformations
-        let processedWords = [...allWords];
+        let processedWords = allWords.slice(0, wordsCount);
         
         if (isAllCaps) {
             processedWords = processedWords.map(w => w.toUpperCase());
@@ -617,35 +620,95 @@
             processedWords[0] = processedWords[0].charAt(0).toUpperCase() + processedWords[0].slice(1);
         }
         
-        let selectedWords = processedWords.slice(0, wordsCount);
-        if (isPunct && selectedWords.length > 1) {
-            selectedWords[0] = selectedWords[0] + ",";
+        if (isPunct && processedWords.length > 1) {
+            processedWords[0] = processedWords[0] + ",";
         }
         
         const isPreset8 = activePresetId === '8';
-        const textColor = document.getElementById('input-text-color')?.value || '#ffffff';
-        const boxColor = document.getElementById('input-box-color')?.value || '#000000';
-        const boxStyle = `background:${boxColor}; color:${textColor}; padding:2px 15px; border-radius:4px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline;`;
+        const isKaraokeCategory = preset.cat === 'KARAOKE' || preset.cat === 'TIKTOK';
+        const boxEl = document.getElementById('preview-active-box');
         
-        // Helper to wrap word if it's the active one for Preset 8
-        const wrap = (word, idx) => (isPreset8 && idx === activeIdx) ? `<span style="${boxStyle}">${word}</span>` : word;
+        // Default state: hide box
+        if (boxEl) boxEl.style.opacity = '0';
 
-        if (linesCount === 1 || wordsCount === 1) {
-            previewEl.innerHTML = selectedWords.map((w, i) => wrap(w, i)).join(' ');
-        } else if (linesCount === 2) {
-            const mid = Math.ceil(wordsCount / 2);
-            const line1 = selectedWords.slice(0, mid).map((w, i) => wrap(w, i)).join(' ');
-            const line2 = selectedWords.slice(mid).map((w, i) => wrap(w, i + mid)).join(' ');
-            previewEl.innerHTML = `${line1}<br>${line2}`;
-        } else if (linesCount === 3) {
-            if (wordsCount <= 2) {
-                previewEl.innerHTML = selectedWords.map((w, i) => wrap(w, i)).join('<br>');
-            } else {
-                const perLine = Math.ceil(wordsCount / 3);
-                const l1 = selectedWords.slice(0, perLine).map((w, i) => wrap(w, i)).join(' ');
-                const l2 = selectedWords.slice(perLine, perLine * 2).map((w, i) => wrap(w, i + perLine)).join(' ');
-                const l3 = selectedWords.slice(perLine * 2).map((w, i) => wrap(w, i + perLine * 2)).join(' ');
-                previewEl.innerHTML = `${l1}<br>${l2}<br>${l3}`;
+        // Helper to wrap word
+        const wrap = (word, idx) => {
+            let style = "";
+            let classes = "preview-word inline-block transition-all duration-300";
+            
+            if (activeIdx !== -1) {
+                if (idx < activeIdx) {
+                    // History words (already spoken)
+                    if (isKaraokeCategory || isPreset8) {
+                        // Stay visible but maybe dimmer? For now stay as is.
+                        if (isKaraokeCategory && preset.cat !== 'TIKTOK') {
+                            style = `color: #00FF99; opacity: 0.6;`; // Karaoke "past" style
+                        }
+                    } 
+                } else if (idx === activeIdx) {
+                    // Current active word
+                    if (isKaraokeCategory) {
+                        if (preset.cat === 'TIKTOK') {
+                             style = `background:#E43F7B; color:#fff; padding:4px 8px; border-radius:4px; box-shadow: 0 4px 15px rgba(228,63,123,0.4);`;
+                        } else {
+                             style = `color: #00FF99; text-shadow: 0 0 12px #00FF99, 0 0 20px #00FF99; transform: scale(1.1);`;
+                        }
+                    }
+                } else {
+                    // Future words
+                    if (!isKaraokeCategory && !isPreset8) {
+                        classes += " opacity-0 scale-90 translate-y-2";
+                    } else if (isKaraokeCategory && preset.cat !== 'TIKTOK') {
+                         style = `opacity: 0.4;`; // Karaoke future
+                    }
+                }
+            }
+
+            return `<span id="word-${idx}" class="${classes}" style="${style}">${word}</span>`;
+        };
+
+        if (linesCount === 1 || processedWords.length <= 1) {
+            previewEl.innerHTML = processedWords.map((w, i) => wrap(w, i)).join(' ');
+        } else {
+            const mid = Math.ceil(processedWords.length / linesCount);
+            let lineGroups = [];
+            for (let i = 0; i < linesCount; i++) {
+                lineGroups.push(processedWords.slice(i * mid, (i + 1) * mid).map((w, j) => wrap(w, i * mid + j)).join(' '));
+            }
+            previewEl.innerHTML = lineGroups.join('<br>');
+        }
+
+        // PRESET 8: Moving Box Logic
+        if (isPreset8 && activeIdx !== -1 && boxEl) {
+            const activeWord = document.getElementById(`word-${activeIdx}`);
+            if (activeWord) {
+                const animType = document.getElementById('val-anim')?.innerText || 'DEFAULT';
+                
+                const rect = activeWord.getBoundingClientRect();
+                const containerRect = document.getElementById('preview-text-wrapper').getBoundingClientRect();
+                
+                const boxColor = document.getElementById('input-box-color')?.value || '#000000';
+                const textColor = document.getElementById('input-text-color')?.value || '#ffffff';
+                
+                boxEl.style.background = boxColor;
+                boxEl.style.width = `${rect.width + 30}px`;
+                boxEl.style.height = `${rect.height + 6}px`;
+                boxEl.style.left = `${rect.left - containerRect.left - 15}px`;
+                boxEl.style.top = `${rect.top - containerRect.top - 3}px`;
+                boxEl.style.borderRadius = '6px';
+                boxEl.style.opacity = '1';
+                boxEl.style.boxShadow = `0 8px 30px rgba(0,0,0,0.5)`;
+                
+                if (animType === 'STATIC') {
+                    boxEl.style.transition = 'none';
+                } else if (animType === 'FADE') {
+                    boxEl.style.transition = 'opacity 0.2s ease-in-out';
+                } else {
+                    boxEl.style.transition = 'all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                }
+                
+                activeWord.style.color = textColor;
+                activeWord.style.transition = 'color 0.2s';
             }
         }
     }
@@ -657,18 +720,21 @@
         
         const wordsCount = parseInt(document.getElementById('input-words')?.value || 1);
         const btn = document.getElementById('btn-play-anim');
-        if (btn) btn.style.opacity = '0.5';
+        if (btn) btn.style.transform = 'scale(0.8)';
         
         tg.HapticFeedback.impactOccurred('medium');
 
         for (let i = 0; i < wordsCount; i++) {
             updatePreviewText(i);
-            await new Promise(r => setTimeout(r, 500)); // 500ms per word
+            const delay = activePresetId === '8' ? 700 : 500;
+            await new Promise(r => setTimeout(r, delay));
         }
         
-        // Return to first word highlight
-        updatePreviewText(-1); // No word highlighted after animation
-        if (btn) btn.style.opacity = '1';
+        // Final state
+        await new Promise(r => setTimeout(r, 800));
+        updatePreviewText(-1);
+        
+        if (btn) btn.style.transform = 'scale(1)';
         isPreviewAnimating = false;
     }
 
