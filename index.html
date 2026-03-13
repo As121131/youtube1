@@ -190,6 +190,8 @@
 
              <div id="editor-preview-container" class="relative w-full h-full bg-surface-container-highest/30 overflow-hidden">
                  <div id="preview-text-wrapper" class="absolute left-0 top-0 w-full h-full flex items-center justify-center pointer-events-none" style="transform: translate(0, 0);">
+                    <!-- Floating box for Preset 8 -->
+                    <div id="preview-active-box" class="absolute pointer-events-none opacity-0 transition-all duration-300" style="z-index: 0;"></div>
                     <p id="preview-text" class="relative text-2xl font-black uppercase tracking-tighter text-center whitespace-normal break-words max-w-[80%]" style="z-index: 1;">SAMPLE_TEXT</p>
                  </div>
                  <div class="absolute inset-0 scanline opacity-10 pointer-events-none"></div>
@@ -278,7 +280,6 @@
             pos_x: "Horizontal_Pos",
             size: "Text_Size",
             words: "Words_Per_Screen",
-            shadow: "Text_Shadow",
             punct: "Punctuation",
             color_text: "Text_Color",
             color_box: "Box_Color",
@@ -296,7 +297,8 @@
             static: "STATIC",
             fade: "FADE",
             btn_commas: "COMMAS",
-            btn_caps: "CAPITALIZED"
+            btn_caps: "CAPITALIZED",
+            shadow: "SHADOW"
         },
         RU: {
             presets_title: "ПРЕСЕТЫ",
@@ -311,7 +313,6 @@
             pos_x: "Гориз_Поз",
             size: "Размер_Текста",
             words: "Слов_На_Экран",
-            shadow: "Тень_Текста",
             punct: "Пунктуация",
             color_text: "Цвет_Текста",
             color_box: "Цвет_Плашки",
@@ -329,7 +330,8 @@
             static: "СТАТИКА",
             fade: "FADE",
             btn_commas: "ЗАПЯТЫЕ",
-            btn_caps: "ЗАГЛАВНЫЕ"
+            btn_caps: "ЗАГЛАВНЫЕ",
+            shadow: "ТЕНЬ"
         }
     };
 
@@ -477,13 +479,13 @@
                         <input type="range" id="input-lines" min="1" max="3" value="1" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
                             oninput="document.getElementById('val-lines').innerText=this.value; updatePreviewText()">
                     </div>
-                    <!-- Text Shadow -->
+                    <!-- Shadow Intensity -->
                     <div class="space-y-3">
                         <div class="flex justify-between">
                             <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="shadow">${I18N[lang].shadow}</span>
-                            <span class="text-[10px] font-black text-primary" id="val-shadow">50%</span>
+                            <span class="text-[10px] font-black text-primary" id="val-shadow">100%</span>
                         </div>
-                        <input type="range" id="input-shadow" min="0" max="100" value="50" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                        <input type="range" id="input-shadow" min="0" max="100" value="100" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
                             oninput="document.getElementById('val-shadow').innerText=this.value+'%'; updatePreviewText()">
                     </div>
                 </div>
@@ -516,14 +518,6 @@
                         <div class="flex justify-between items-center">
                             <span class="text-xs font-bold" data-i18n="color_box">${I18N[lang].color_box}</span>
                             <input type="color" id="input-box-color" value="#000000" class="w-8 h-8 border-none bg-transparent cursor-pointer" oninput="updatePreviewText()">
-                        </div>
-                        <div class="space-y-3">
-                            <div class="flex justify-between">
-                                <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="anim_type">${I18N[lang].anim_type}</span>
-                                <span class="text-[10px] font-black text-primary uppercase" id="val-anim">DEFAULT</span>
-                            </div>
-                            <input type="range" id="input-anim" min="0" max="2" value="0" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
-                                oninput="const v=['DEFAULT','STATIC','FADE']; document.getElementById('val-anim').innerText=v[this.value]">
                         </div>
                     </div>
                 </div>
@@ -600,7 +594,7 @@
         if (dropdown) dropdown.classList.add('hidden');
     });
 
-    function updatePreviewText() {
+    function updatePreviewText(activeIdx = -1) {
         const previewEl = document.getElementById('preview-text');
         if (!previewEl) return;
         
@@ -609,16 +603,17 @@
 
         const wordsCount = parseInt(document.getElementById('input-words')?.value || 1);
         const linesCount = parseInt(document.getElementById('input-lines')?.value || 1);
+        const shadowVal = parseInt(document.getElementById('input-shadow')?.value || 100);
         const isAllCaps = document.getElementById('btn-all-caps')?.dataset.state === 'on';
         const isCapsFirst = document.getElementById('btn-caps-first')?.dataset.state === 'on';
         const isPunct = document.getElementById('btn-punct')?.dataset.state === 'on';
-        const shadowVal = parseInt(document.getElementById('input-shadow')?.value || 50);
         
-        // Shadow formula to match photo: soft, multi-layered black glow
-        const shadowSize = (shadowVal / 100) * 12; 
-        const shadowOpacity = (shadowVal / 100) * 0.8;
-        const textShadow = `0 0 ${shadowSize}px rgba(0,0,0,${shadowOpacity}), 0 0 ${shadowSize/2}px rgba(0,0,0,${shadowOpacity})`;
-
+        // Dynamic Shadow (from photo: soft, dark, slightly offset)
+        const sSize = (shadowVal / 100) * 4;
+        const sBlur = (shadowVal / 100) * 12;
+        const sAlpha = (shadowVal / 100) * 0.9;
+        previewEl.style.textShadow = `0px ${sSize}px ${sBlur}px rgba(0,0,0,${sAlpha})`;
+        
         let allWords = ["sample", "text", "here", "is", "great"];
         let processedWords = allWords.slice(0, wordsCount);
         
@@ -633,13 +628,47 @@
         }
         
         const isPreset8 = activePresetId === '8';
-        const textColor = document.getElementById('input-text-color')?.value || '#ffffff';
-        const boxColor = document.getElementById('input-box-color')?.value || '#000000';
-        const boxStyle = `background:${boxColor}; color:${textColor}; padding:2px 15px; border-radius:4px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline;`;
+        const isKaraokeCategory = preset.cat === 'KARAOKE' || preset.cat === 'TIKTOK';
+        const boxEl = document.getElementById('preview-active-box');
         
-        previewEl.style.textShadow = textShadow;
+        // Default state: hide box
+        if (boxEl) boxEl.style.opacity = '0';
 
-        const wrap = (word, idx) => (isPreset8 && idx === 0) ? `<span style="${boxStyle}">${word}</span>` : word;
+        // Helper to wrap word
+        const wrap = (word, idx) => {
+            let style = "";
+            let classes = "preview-word inline-block transition-all duration-300";
+            
+            if (activeIdx !== -1) {
+                if (idx < activeIdx) {
+                    // History words (already spoken)
+                    if (isKaraokeCategory || isPreset8) {
+                        // Stay visible but maybe dimmer? For now stay as is.
+                        if (isKaraokeCategory && preset.cat !== 'TIKTOK') {
+                            style = `color: #00FF99; opacity: 0.6;`; // Karaoke "past" style
+                        }
+                    } 
+                } else if (idx === activeIdx) {
+                    // Current active word
+                    if (isKaraokeCategory) {
+                        if (preset.cat === 'TIKTOK') {
+                             style = `background:#E43F7B; color:#fff; padding:4px 8px; border-radius:4px; box-shadow: 0 4px 15px rgba(228,63,123,0.4);`;
+                        } else {
+                             style = `color: #00FF99; text-shadow: 0 0 12px #00FF99, 0 0 20px #00FF99; transform: scale(1.1);`;
+                        }
+                    }
+                } else {
+                    // Future words
+                    if (!isKaraokeCategory && !isPreset8) {
+                        classes += " opacity-0 scale-90 translate-y-2";
+                    } else if (isKaraokeCategory && preset.cat !== 'TIKTOK') {
+                         style = `opacity: 0.4;`; // Karaoke future
+                    }
+                }
+            }
+
+            return `<span id="word-${idx}" class="${classes}" style="${style}">${word}</span>`;
+        };
 
         if (linesCount === 1 || processedWords.length <= 1) {
             previewEl.innerHTML = processedWords.map((w, i) => wrap(w, i)).join(' ');
@@ -651,6 +680,46 @@
             }
             previewEl.innerHTML = lineGroups.join('<br>');
         }
+
+        // PRESET 8: Moving Box Logic
+        if (isPreset8 && activeIdx !== -1 && boxEl) {
+            const activeWord = document.getElementById(`word-${activeIdx}`);
+            if (activeWord) {
+                const animType = document.getElementById('val-anim')?.innerText || 'DEFAULT';
+                
+                const rect = activeWord.getBoundingClientRect();
+                const containerRect = document.getElementById('preview-text-wrapper').getBoundingClientRect();
+                
+                const boxColor = document.getElementById('input-box-color')?.value || '#000000';
+                const textColor = document.getElementById('input-text-color')?.value || '#ffffff';
+                
+                boxEl.style.background = boxColor;
+                boxEl.style.width = `${rect.width + 30}px`;
+                boxEl.style.height = `${rect.height + 6}px`;
+                boxEl.style.left = `${rect.left - containerRect.left - 15}px`;
+                boxEl.style.top = `${rect.top - containerRect.top - 3}px`;
+                boxEl.style.borderRadius = '6px';
+                boxEl.style.opacity = '1';
+                boxEl.style.boxShadow = `0 8px 30px rgba(0,0,0,0.5)`;
+                
+                if (animType === 'STATIC') {
+                    boxEl.style.transition = 'none';
+                } else if (animType === 'FADE') {
+                    boxEl.style.transition = 'opacity 0.2s ease-in-out';
+                } else {
+                    boxEl.style.transition = 'all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                }
+                
+                activeWord.style.color = textColor;
+                activeWord.style.transition = 'color 0.2s';
+            }
+        }
+    }
+
+    let isPreviewAnimating = false;
+    async function playPreviewAnimation() {
+        // Disabled per user request
+        return;
     }
 
     function toggleButton(btn) {
@@ -712,8 +781,7 @@
                 uppercase: document.getElementById('btn-caps')?.dataset.state === 'on',
                 text_color: String(document.getElementById('input-text-color')?.value || '#ffffff'),
                 box_color: document.getElementById('input-box-color') ? String(document.getElementById('input-box-color').value) : null,
-                text_shadow: Number(document.getElementById('input-shadow')?.value || 0),
-                animation_type: document.getElementById('val-anim') ? String(document.getElementById('val-anim').innerText.toLowerCase()) : 'default',
+                shadow_intensity: Number(document.getElementById('input-shadow')?.value || 100) / 100,
                 mask_intensity: document.getElementById('val-mask') ? String(document.getElementById('val-mask').innerText.toLowerCase()) : 'medium'
             }
         };
