@@ -167,11 +167,22 @@
 
     <!-- Live Preview Section -->
     <section class="space-y-4 pt-12">
-        <div class="relative aspect-video w-full bg-surface-container-lowest overflow-hidden group">
-            <div id="editor-preview-container" class="w-full h-full flex items-center justify-center bg-surface-container">
-                 <p id="preview-text" class="text-3xl font-black uppercase tracking-tighter" style="">PREVIEW_TEXT</p>
+        <div id="preview-frame" class="relative aspect-video w-full bg-surface-container-lowest overflow-hidden group border border-outline-variant/10 transition-all duration-500 shadow-2xl mx-auto max-w-[500px]">
+            <!-- Aspect Ratio Selector (Top Right) -->
+            <div class="absolute top-3 right-3 flex gap-1.5 z-30 bg-black/60 backdrop-blur-md p-1 border border-white/10">
+                <button onclick="setAspectRatio('9:16')" class="ratio-btn px-2 py-1 text-[8px] font-black tracking-tighter hover:text-primary transition-colors text-on-surface-variant" data-ratio="9:16">9:16</button>
+                <button onclick="setAspectRatio('1:1')" class="ratio-btn px-2 py-1 text-[8px] font-black tracking-tighter hover:text-primary transition-colors text-on-surface-variant" data-ratio="1:1">1:1</button>
+                <button onclick="setAspectRatio('16:9')" class="ratio-btn px-2 py-1 text-[8px] font-black tracking-tighter hover:text-primary transition-colors text-primary" data-ratio="16:9">16:9</button>
             </div>
-            <div class="absolute inset-0 scanline opacity-20 pointer-events-none"></div>
+
+            <div id="editor-preview-container" class="relative w-full h-full bg-surface-container-highest/30">
+                 <div id="preview-text-wrapper" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full flex justify-center transition-all duration-200 pointer-events-none">
+                    <p id="preview-text" class="text-2xl font-black uppercase tracking-tighter text-center whitespace-normal break-words max-w-[80%] drop-shadow-lg" style="">SAMPLE_TEXT</p>
+                 </div>
+            </div>
+            
+            <div class="absolute inset-0 scanline opacity-10 pointer-events-none"></div>
+            <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20 pointer-events-none"></div>
         </div>
     </section>
 
@@ -377,10 +388,13 @@
     function openEditor(p) {
         document.getElementById('editor-preset-name').innerText = p.name;
         const preview = document.getElementById('preview-text');
-        preview.innerText = "SAMPLE_TEXT";
-        preview.className = "text-center transition-all duration-300";
-        preview.style = p.css;
-        preview.style.color = p.color;
+        if (preview) {
+            preview.innerText = "SAMPLE_TEXT";
+            preview.className = "text-center transition-all duration-300";
+            // Important: use cssText for string styles, then specific props
+            preview.style.cssText = p.css;
+            preview.style.color = p.color;
+        }
 
         const controls = document.getElementById('editor-controls');
         const lang = currentLang;
@@ -397,7 +411,7 @@
                             <span class="text-[10px] font-black text-primary" id="val-pos-y">50%</span>
                         </div>
                         <input type="range" id="input-pos-y" min="0" max="100" value="50" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
-                            oninput="document.getElementById('val-pos-y').innerText=this.value+'%'">
+                            oninput="document.getElementById('val-pos-y').innerText=this.value+'%'; updateLivePreview()">
                     </div>
                     <!-- Horizontal Pos -->
                     <div class="space-y-3">
@@ -406,7 +420,7 @@
                             <span class="text-[10px] font-black text-primary" id="val-pos-x">CENTER</span>
                         </div>
                         <input type="range" id="input-pos-x" min="0" max="2" value="1" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
-                            oninput="const v=['LEFT','CENTER','RIGHT']; document.getElementById('val-pos-x').innerText=v[this.value]">
+                            oninput="const v=['LEFT','CENTER','RIGHT']; document.getElementById('val-pos-x').innerText=v[this.value]; updateLivePreview()">
                     </div>
                     <!-- Text Size -->
                     <div class="space-y-3">
@@ -415,7 +429,7 @@
                             <span class="text-[10px] font-black text-primary" id="val-size">MEDIUM</span>
                         </div>
                         <input type="range" id="input-size" min="0" max="3" value="1" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
-                            oninput="const v=['SMALL','MEDIUM','LARGE','MAX']; document.getElementById('val-size').innerText=v[this.value]; document.getElementById('preview-text').style.fontSize=(30+this.value*15)+'px'">
+                            oninput="const v=['SMALL','MEDIUM','LARGE','MAX']; document.getElementById('val-size').innerText=v[this.value]; document.getElementById('preview-text').style.fontSize=(18+this.value*8)+'px'">
                     </div>
                     <!-- Words count -->
                     <div class="space-y-3">
@@ -485,12 +499,62 @@
 
         controls.innerHTML = html;
         showView('editor');
+        setTimeout(updateLivePreview, 100); // Initial position
+    }
+
+    function setAspectRatio(ratio) {
+        const frame = document.getElementById('preview-frame');
+        // Remove old aspect classes
+        frame.classList.remove('aspect-video', 'aspect-square', 'aspect-[9/16]');
+        
+        if (ratio === '16:9') frame.classList.add('aspect-video');
+        else if (ratio === '1:1') frame.classList.add('aspect-square');
+        else if (ratio === '9:16') frame.classList.add('aspect-[9/16]');
+
+        // Update active button state
+        document.querySelectorAll('.ratio-btn').forEach(btn => {
+            if (btn.dataset.ratio === ratio) {
+                btn.classList.add('text-primary');
+                btn.classList.remove('text-on-surface-variant');
+            } else {
+                btn.classList.remove('text-primary');
+                btn.classList.add('text-on-surface-variant');
+            }
+        });
+
+        tg.HapticFeedback.impactOccurred('light');
+    }
+
+    function updateLivePreview() {
+        const textWrapper = document.getElementById('preview-text-wrapper');
+        if (!textWrapper) return;
+
+        const y = document.getElementById('input-pos-y')?.value || 50;
+        const xVal = document.getElementById('val-pos-x')?.innerText || 'CENTER';
+        
+        // Vertical
+        textWrapper.style.top = `${y}%`;
+        
+        // Horizontal
+        if (xVal === 'LEFT') {
+            textWrapper.style.left = '10%';
+            textWrapper.style.transform = `translate(0, -50%)`;
+            textWrapper.style.justifyContent = 'flex-start';
+        } else if (xVal === 'RIGHT') {
+            textWrapper.style.left = '90%';
+            textWrapper.style.transform = `translate(-100%, -50%)`;
+            textWrapper.style.justifyContent = 'flex-end';
+        } else {
+            textWrapper.style.left = '50%';
+            textWrapper.style.transform = `translate(-50%, -50%)`;
+            textWrapper.style.justifyContent = 'center';
+        }
     }
 
     function saveChanges(event) {
         const btn = event instanceof Event ? event.currentTarget : document.querySelector('[onclick="saveChanges()"]');
         if (btn) {
-            btn.innerText = lang === 'RU' ? "СОХРАНЕНИЕ..." : "SAVING...";
+            btn.innerText = currentLang === 'RU' ? "СОХРАНЕНИЕ..." : "SAVING...";
             btn.classList.add('animate-pulse');
             btn.disabled = true;
         }
@@ -532,6 +596,7 @@
 
     updateLanguage();
     renderPresets();
+    showView('presets'); // Ensure initial view is visible
 </script>
 </body>
 </html>
