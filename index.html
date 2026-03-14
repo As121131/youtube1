@@ -196,6 +196,18 @@
                  <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20 pointer-events-none"></div>
             </div>
         </div>
+
+        <!-- Background Selector Buttons -->
+        <div class="flex items-center justify-center gap-4 py-2 bg-surface/40 backdrop-blur-md border border-outline-variant/10 rounded-sm mx-auto max-w-fit px-4">
+            <span class="text-[8px] font-black text-on-surface-variant uppercase tracking-[0.2em]">Preview_BG:</span>
+            <div class="flex gap-2">
+                <button onclick="setPreviewBackground('default')" class="w-5 h-5 border border-outline-variant/30 bg-surface-container-highest/30 rounded-full hover:border-primary transition-all relative overflow-hidden" title="Default Grid">
+                    <div class="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/30 to-transparent"></div>
+                </button>
+                <button onclick="setPreviewBackground('black')" class="w-5 h-5 border border-white/10 bg-black rounded-full hover:border-primary transition-all" title="Black Background"></button>
+                <button onclick="setPreviewBackground('white')" class="w-5 h-5 border border-black/10 bg-white rounded-full hover:border-primary transition-all" title="White Background"></button>
+            </div>
+        </div>
     </section>
 
     <!-- Settings Controls (Placeholder for dynamic range sliders etc) -->
@@ -573,6 +585,25 @@
         controls.innerHTML = html;
         showView('editor');
         setTimeout(updateLivePreview, 100); // Initial position
+    }
+
+    function setPreviewBackground(color) {
+        const container = document.getElementById('editor-preview-container');
+        if (!container) return;
+        
+        // Reset
+        container.style.backgroundColor = '';
+        container.style.backgroundImage = '';
+        
+        if (color === 'black') {
+            container.style.backgroundColor = '#000000';
+            container.style.backgroundImage = 'none';
+        } else if (color === 'white') {
+            container.style.backgroundColor = '#ffffff';
+            container.style.backgroundImage = 'none';
+        }
+        
+        tg.HapticFeedback.impactOccurred('light');
     }
 
     function setAspectRatio(ratio) {
