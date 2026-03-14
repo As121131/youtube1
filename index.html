@@ -756,18 +756,18 @@
         }
         
         if (isShadowOn) {
-            const blurRadius = shBlurVal * 2.5; 
-            const shadowOpacity = (0.2 + (shIntensity / 10) * 0.8).toFixed(2);
+            // Премиальная тень через filter: drop-shadow для всего контейнера
+            const intensity = shIntensity / 10;
+            const blur = shBlurVal * 1.8;
+            const opacity = (0.4 + intensity * 0.6).toFixed(2);
             
-            shadows.push(`0px 0px ${blurRadius}px rgba(0,0,0,${shadowOpacity})`);
-            shadows.push(`0px 0px ${blurRadius * 2}px rgba(0,0,0,${(shadowOpacity * 0.4).toFixed(2)})`);
+            // Накладываем два слоя drop-shadow для мягкости и глубины
+            previewEl.style.filter = `drop-shadow(0 0 ${blur}px rgba(0,0,0,${opacity})) drop-shadow(0 0 ${blur * 2.5}px rgba(0,0,0,${(opacity * 0.5).toFixed(2)}))`;
+        } else {
+            previewEl.style.filter = 'none';
         }
         
-        if (shadows.length > 0) {
-            shadowStyle = `text-shadow: ${shadows.join(', ')};`;
-        }
-        
-        previewEl.style.textShadow = shadows.join(', ') || 'none';
+        previewEl.style.textShadow = shadows.length > 0 ? shadows.join(', ') : 'none';
         
         const boxStyle = `background:${boxColor}; color:${textColor}; padding:4px 8px; border-radius:4px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${shadowStyle}`;
         const emptyBoxStyle = `background:transparent; color:${textColor}; padding:4px 8px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${shadowStyle}`;
