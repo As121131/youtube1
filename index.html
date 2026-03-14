@@ -755,22 +755,30 @@
             shadows.push(`-${sO}px 0px 0 #000`);
         }
         
+        let textShadows = [...shadows];
+        let boxShadow = 'none';
+
         if (isShadowOn) {
-            // Премиальная тень через filter: drop-shadow для всего контейнера
             const intensity = shIntensity / 10;
             const blur = shBlurVal * 1.8;
             const opacity = (0.4 + intensity * 0.6).toFixed(2);
             
-            // Накладываем два слоя drop-shadow для мягкости и глубины
-            previewEl.style.filter = `drop-shadow(0 0 ${blur}px rgba(0,0,0,${opacity})) drop-shadow(0 0 ${blur * 2.5}px rgba(0,0,0,${(opacity * 0.5).toFixed(2)}))`;
-        } else {
-            previewEl.style.filter = 'none';
+            // Тень для текста
+            textShadows.push(`0 0 ${blur}px rgba(0,0,0,${opacity})`);
+            textShadows.push(`0 0 ${blur * 2.5}px rgba(0,0,0,${(opacity * 0.5).toFixed(2)})`);
+            
+            // Тень для плашки (только если пресет 8)
+            if (isPreset8) {
+                boxShadow = `0 0 ${blur}px rgba(0,0,0,${opacity}), 0 0 ${blur * 2}px rgba(0,0,0,${(opacity * 0.4).toFixed(2)})`;
+            }
         }
         
-        previewEl.style.textShadow = shadows.length > 0 ? shadows.join(', ') : 'none';
+        previewEl.style.filter = 'none';
+        previewEl.style.textShadow = textShadows.length > 0 ? textShadows.join(', ') : 'none';
         
-        const boxStyle = `background:${boxColor}; color:${textColor}; padding:4px 8px; border-radius:4px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${shadowStyle}`;
-        const emptyBoxStyle = `background:transparent; color:${textColor}; padding:4px 8px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${shadowStyle}`;
+        const finalShadowStyle = textShadows.length > 0 ? `text-shadow: ${textShadows.join(', ')};` : '';
+        const boxStyle = `background:${boxColor}; color:${textColor}; padding:4px 8px; border-radius:4px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${finalShadowStyle} box-shadow: ${boxShadow};`;
+        const emptyBoxStyle = `background:transparent; color:${textColor}; padding:4px 8px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${finalShadowStyle}`;
         
         if (previewLinesCount === 1 || previewWordsCount === 1) {
             if (isPreset8) {
