@@ -684,10 +684,11 @@
         }
         
         if (textShadow > 0) {
-            // Добавляем обычную мягкую тень падения
-            const shBlur = textShadow * 2;
-            const shOffset = textShadow;
-            shadows.push(`0px ${shOffset}px ${shBlur}px rgba(0,0,0,0.95)`);
+            // Добавляем объемную мягкую тень падения с увеличенным радиусом и размытием
+            const shBlur = textShadow * 4;
+            const shY = textShadow * 1.5;
+            shadows.push(`0px ${shY}px ${shBlur}px rgba(0,0,0,1)`);
+            shadows.push(`0px ${shY/2}px ${shBlur/2}px rgba(0,0,0,0.8)`);
         }
         
         if (shadows.length > 0) {
