@@ -685,10 +685,11 @@
         }
         
         if (textShadow > 0) {
-            // Уменьшенные коэффиценты для "очень слабой" тени на 1
-            const shBlur = textShadow * 2.0; 
-            shadows.push(`0px 0px ${shBlur}px rgba(0,0,0,1)`);
-            shadows.push(`0px 0px ${shBlur * 1.2}px rgba(0,0,0,0.6)`);
+            // Эффект мягкого ореола (Halo) как на примере "Я на воздержании"
+            const shBlur = textShadow * 6.0; 
+            shadows.push(`0px 0px ${shBlur}px rgba(0,0,0,0.9)`);
+            shadows.push(`0px 0px ${shBlur * 2.0}px rgba(0,0,0,0.5)`);
+            shadows.push(`0px 0px ${shBlur * 0.5}px rgba(0,0,0,1)`);
             
             // Применяем ко всему контейнеру превью для наследования всеми словами
             previewEl.style.textShadow = shadows.join(', ');
