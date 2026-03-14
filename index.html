@@ -750,8 +750,6 @@
         }
         
         const shadowBtn = document.getElementById('btn-shadow');
-        const isShadowOn = shadowBtn && shadowBtn.dataset.state === 'on';
-        
         if (isShadowOn) {
             const shIntensity = parseInt(document.getElementById('input-sh-intensity')?.value || 5);
             const shBlurVal = parseInt(document.getElementById('input-sh-blur')?.value || 5);
@@ -761,10 +759,14 @@
             
             shadows.push(`0px 0px ${blurRadius}px rgba(0,0,0,${shadowOpacity})`);
             shadows.push(`0px 0px ${blurRadius * 2}px rgba(0,0,0,${(shadowOpacity * 0.4).toFixed(2)})`);
-            
-            // Применяем ко всему контейнеру превью для наследования всеми словами
-            previewEl.style.textShadow = shadows.join(', ');
         }
+        
+        if (shadows.length > 0) {
+            previewEl.style.textShadow = shadows.join(', ');
+        } else {
+            previewEl.style.textShadow = 'none';
+        }
+
         
         const boxStyle = `background:${boxColor}; color:${textColor}; padding:4px 8px; border-radius:4px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${shadowStyle}`;
         const emptyBoxStyle = `background:transparent; color:${textColor}; padding:4px 8px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${shadowStyle}`;
