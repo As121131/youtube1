@@ -697,7 +697,12 @@
         const isCapsFirst = document.getElementById('btn-caps-first')?.dataset.state === 'on';
         const isPunct = document.getElementById('btn-punct')?.dataset.state === 'on';
         const sizeVal = parseInt(document.getElementById('input-size')?.value || 1);
-        const textShadow = parseInt(document.getElementById('input-shadow')?.value || 0);
+        // Read new shadow parameters
+        const shadowBtn = document.getElementById('btn-shadow');
+        const isShadowOn = shadowBtn && shadowBtn.dataset.state === 'on';
+        const shIntensity = parseInt(document.getElementById('input-sh-intensity')?.value || 5);
+        const shBlurVal = parseInt(document.getElementById('input-sh-blur')?.value || 5);
+        
         const textStroke = parseInt(document.getElementById('input-stroke')?.value || 0);
         
         // Apply text scaling based on size slider (0=small, 1=medium, 2=large, 3=max)
@@ -749,22 +754,19 @@
             shadows.push(`-${sO}px 0px 0 #000`);
         }
         
-        const shadowBtn = document.getElementById('btn-shadow');
-        const isShadowOn = shadowBtn && shadowBtn.dataset.state === 'on';
-        
         if (isShadowOn) {
-            const shIntensity = parseInt(document.getElementById('input-sh-intensity')?.value || 5);
-            const shBlurVal = parseInt(document.getElementById('input-sh-blur')?.value || 5);
-            
-            const blurRadius = shBlurVal * 3.5;
+            const blurRadius = shBlurVal * 2.5; 
             const shadowOpacity = (0.2 + (shIntensity / 10) * 0.8).toFixed(2);
             
             shadows.push(`0px 0px ${blurRadius}px rgba(0,0,0,${shadowOpacity})`);
             shadows.push(`0px 0px ${blurRadius * 2}px rgba(0,0,0,${(shadowOpacity * 0.4).toFixed(2)})`);
-            
-            // Применяем ко всему контейнеру превью для наследования всеми словами
-            previewEl.style.textShadow = shadows.join(', ');
         }
+        
+        if (shadows.length > 0) {
+            shadowStyle = `text-shadow: ${shadows.join(', ')};`;
+        }
+        
+        previewEl.style.textShadow = shadows.join(', ') || 'none';
         
         const boxStyle = `background:${boxColor}; color:${textColor}; padding:4px 8px; border-radius:4px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${shadowStyle}`;
         const emptyBoxStyle = `background:transparent; color:${textColor}; padding:4px 8px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${shadowStyle}`;
