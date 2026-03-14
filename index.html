@@ -652,7 +652,21 @@
         const isPreset8 = activePresetId === '8';
         const textColor = document.getElementById('input-text-color')?.value || '#ffffff';
         const boxColor = document.getElementById('input-box-color')?.value || '#000000';
-        const shadowStyle = textShadow > 0 ? `text-shadow: 2px 2px ${textShadow * 2}px rgba(0,0,0,0.8);` : '';
+        
+        let shadowStyle = '';
+        if (textShadow > 0) {
+            // Реалистичная имитация TikTok "Обводка + Тень" (как на 2 фото)
+            const sOutline = textShadow * 0.7;
+            const blur = textShadow * 0.5;
+            // Делаем круговую обводку (stroke) и смещенную тень (drop shadow)
+            shadowStyle = `text-shadow: 
+                ${sOutline}px ${sOutline}px 0 #000, 
+                -${sOutline}px -${sOutline}px 0 #000, 
+                ${sOutline}px -${sOutline}px 0 #000, 
+                -${sOutline}px ${sOutline}px 0 #000,
+                0px ${textShadow}px ${blur}px rgba(0,0,0,0.9);`;
+        }
+        
         const boxStyle = `background:${boxColor}; color:${textColor}; padding:2px 15px; border-radius:10px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${shadowStyle}`;
         const emptyBoxStyle = `background:transparent; color:${textColor}; padding:2px 15px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${shadowStyle}`;
         
