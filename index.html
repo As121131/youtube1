@@ -281,7 +281,8 @@
             punct: "Punctuation",
             color_text: "Text color",
             color_box: "Box color",
-            text_shadow: "Text Shadow",
+            text_shadow: "Drop Shadow",
+            text_stroke: "Stroke",
             lines_count: "Lines Count",
             anim_type: "Animation",
             mask_int: "Mask Intensity",
@@ -314,7 +315,8 @@
             punct: "Знаки препинания",
             color_text: "Цвет текста",
             color_box: "Цвет плашки",
-            text_shadow: "Тень текста",
+            text_shadow: "Тень",
+            text_stroke: "Обводка",
             lines_count: "Количество строк",
             anim_type: "Анимация",
             mask_int: "Интенсивность",
@@ -437,7 +439,8 @@
         const initCaps = urlParams.get('caps') === 'true';
         const initCapsFirst = urlParams.get('cf') === 'true';
         const initSize = urlParams.get('s') || '1'; // 0, 1, 2, 3
-        const initShadow = urlParams.get('sh') !== null && urlParams.get('sh') !== '' ? urlParams.get('sh') : '2';
+        const initStroke = urlParams.get('st') !== null && urlParams.get('st') !== '' ? urlParams.get('st') : '2';
+        const initShadow = urlParams.get('sh') !== null && urlParams.get('sh') !== '' ? urlParams.get('sh') : '3';
 
         // General Settings HTML
         let html = `
@@ -522,10 +525,18 @@
                         </div>
                         <div class="space-y-3">
                             <div class="flex justify-between">
+                                <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="text_stroke">${I18N[lang].text_stroke}</span>
+                                <span class="text-[10px] font-black text-primary uppercase" id="val-stroke">${initStroke}</span>
+                            </div>
+                            <input type="range" id="input-stroke" min="0" max="10" value="${initStroke}" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                                oninput="document.getElementById('val-stroke').innerText=this.value; updatePreviewText()">
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
                                 <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="text_shadow">${I18N[lang].text_shadow}</span>
                                 <span class="text-[10px] font-black text-primary uppercase" id="val-shadow">${initShadow}</span>
                             </div>
-                            <input type="range" id="input-shadow" min="0" max="10" value="${initShadow}" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                            <input type="range" id="input-shadow" min="0" max="15" value="${initShadow}" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
                                 oninput="document.getElementById('val-shadow').innerText=this.value; updatePreviewText()">
                         </div>
                         <div class="space-y-3">
@@ -622,6 +633,7 @@
         const isPunct = document.getElementById('btn-punct')?.dataset.state === 'on';
         const sizeVal = parseInt(document.getElementById('input-size')?.value || 1);
         const textShadow = parseInt(document.getElementById('input-shadow')?.value || 0);
+        const textStroke = parseInt(document.getElementById('input-stroke')?.value || 0);
         
         // Apply text scaling based on size slider (0=small, 1=medium, 2=large, 3=max)
         const scaleMap = { 0: 0.75, 1: 1.0, 2: 1.25, 3: 1.6 };
@@ -654,17 +666,32 @@
         const boxColor = document.getElementById('input-box-color')?.value || '#000000';
         
         let shadowStyle = '';
+        let shadows = [];
+        
+        if (textStroke > 0) {
+            // Реалистичная имитация обводки
+            const sO = textStroke * 0.7;
+            shadows.push(`${sO}px ${sO}px 0 #000`);
+            shadows.push(`-${sO}px -${sO}px 0 #000`);
+            shadows.push(`${sO}px -${sO}px 0 #000`);
+            shadows.push(`-${sO}px ${sO}px 0 #000`);
+            
+            // Заглушка для углов (для более круглой обводки)
+            shadows.push(`0px ${sO}px 0 #000`);
+            shadows.push(`0px -${sO}px 0 #000`);
+            shadows.push(`${sO}px 0px 0 #000`);
+            shadows.push(`-${sO}px 0px 0 #000`);
+        }
+        
         if (textShadow > 0) {
-            // Реалистичная имитация TikTok "Обводка + Тень" (как на 2 фото)
-            const sOutline = textShadow * 0.7;
-            const blur = textShadow * 0.5;
-            // Делаем круговую обводку (stroke) и смещенную тень (drop shadow)
-            shadowStyle = `text-shadow: 
-                ${sOutline}px ${sOutline}px 0 #000, 
-                -${sOutline}px -${sOutline}px 0 #000, 
-                ${sOutline}px -${sOutline}px 0 #000, 
-                -${sOutline}px ${sOutline}px 0 #000,
-                0px ${textShadow}px ${blur}px rgba(0,0,0,0.9);`;
+            // Добавляем обычную мягкую тень падения
+            const shBlur = textShadow * 2;
+            const shOffset = textShadow;
+            shadows.push(`0px ${shOffset}px ${shBlur}px rgba(0,0,0,0.95)`);
+        }
+        
+        if (shadows.length > 0) {
+            shadowStyle = `text-shadow: ${shadows.join(', ')};`;
         }
         
         const boxStyle = `background:${boxColor}; color:${textColor}; padding:2px 15px; border-radius:10px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${shadowStyle}`;
@@ -780,6 +807,7 @@
                 box_color: document.getElementById('input-box-color') ? String(document.getElementById('input-box-color').value) : null,
                 animation_type: document.getElementById('val-anim') ? String(document.getElementById('val-anim').innerText.toLowerCase()) : 'default',
                 text_shadow: document.getElementById('input-shadow') ? Number(document.getElementById('input-shadow').value) : null,
+                text_stroke: document.getElementById('input-stroke') ? Number(document.getElementById('input-stroke').value) : null,
                 mask_intensity: document.getElementById('val-mask') ? String(document.getElementById('val-mask').innerText.toLowerCase()) : 'medium'
             }
         };
