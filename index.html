@@ -716,11 +716,15 @@
         }
         
         if (textShadow > 0) {
-            // Сделал тень на "1" максимально деликатной
-            const shBlur = textShadow * 5.0; 
-            shadows.push(`0px 0px ${shBlur}px rgba(0,0,0,0.4)`);
-            shadows.push(`0px 0px ${shBlur * 2.0}px rgba(0,0,0,0.15)`);
-            shadows.push(`0px 0px ${shBlur * 0.2}px rgba(0,0,0,0.6)`);
+            // Плавная прогрессия от 1 до 15 с очень слабой базой на 1
+            const progress = textShadow / 15;
+            const shBlur = textShadow * 4.0; 
+            
+            const alpha1 = (0.15 + progress * 0.8).toFixed(2);
+            const alpha2 = (0.05 + progress * 0.4).toFixed(2);
+            
+            shadows.push(`0px 0px ${shBlur}px rgba(0,0,0,${alpha1})`);
+            shadows.push(`0px 0px ${shBlur * 1.8}px rgba(0,0,0,${alpha2})`);
             
             // Применяем ко всему контейнеру превью для наследования всеми словами
             previewEl.style.textShadow = shadows.join(', ');
