@@ -684,12 +684,10 @@
         }
         
         if (textShadow > 0) {
-            // Равномерное свечение (тень без смещения)
-            const shBlur = textShadow * 3;
-            const shSpread = textShadow;
+            // Более мягкое и постепенное свечение
+            const shBlur = textShadow * 2;
             shadows.push(`0px 0px ${shBlur}px rgba(0,0,0,1)`);
-            shadows.push(`0px 0px ${shBlur * 2}px rgba(0,0,0,0.8)`);
-            shadows.push(`0px 0px ${shBlur * 0.5}px rgba(0,0,0,1)`);
+            shadows.push(`0px 0px ${shBlur * 1.5}px rgba(0,0,0,0.7)`);
         }
         
         if (shadows.length > 0) {
