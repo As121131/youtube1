@@ -701,29 +701,34 @@
         let shadows = [];
         
         if (textStroke > 0) {
-            // Реалистичная имитация обводки
+            // Реалистичная имитация обводки через многослойный text-shadow
             const sO = textStroke * 0.7;
-            shadows.push(`${sO}px ${sO}px 0 #000`);
-            shadows.push(`-${sO}px -${sO}px 0 #000`);
-            shadows.push(`${sO}px -${sO}px 0 #000`);
-            shadows.push(`-${sO}px ${sO}px 0 #000`);
-            
-            // Заглушка для углов (для более круглой обводки)
-            shadows.push(`0px ${sO}px 0 #000`);
-            shadows.push(`0px -${sO}px 0 #000`);
-            shadows.push(`${sO}px 0px 0 #000`);
-            shadows.push(`-${sO}px 0px 0 #000`);
+            const strokeColor = '#000000'; // Всегда черная обводка для контраста
+            shadows.push(`${sO}px ${sO}px 0 ${strokeColor}`);
+            shadows.push(`-${sO}px -${sO}px 0 ${strokeColor}`);
+            shadows.push(`${sO}px -${sO}px 0 ${strokeColor}`);
+            shadows.push(`-${sO}px ${sO}px 0 ${strokeColor}`);
+            shadows.push(`0px ${sO}px 0 ${strokeColor}`);
+            shadows.push(`0px -${sO}px 0 ${strokeColor}`);
+            shadows.push(`${sO}px 0px 0 ${strokeColor}`);
+            shadows.push(`-${sO}px 0px 0 ${strokeColor}`);
         }
         
         if (textShadow > 0) {
-            // Возвращена прошлая структура, но с пониженной плотностью
-            const shBlur = textShadow * 4.0; 
+            // "Честный" предпросмотр тени, синхронизированный с логикой генератора (5.0x)
+            const shBlur = textShadow * 5.0; 
             shadows.push(`0px 0px ${shBlur}px rgba(0,0,0,0.5)`);
             shadows.push(`0px 0px ${shBlur * 1.5}px rgba(0,0,0,0.2)`);
             shadows.push(`0px 0px ${shBlur * 0.3}px rgba(0,0,0,0.4)`);
-            
-            // Применяем ко всему контейнеру превью для наследования всеми словами
-            previewEl.style.textShadow = shadows.join(', ');
+        }
+        
+        // Применяем собранные тени к основному элементу и сохраняем для дочерних элементов
+        if (shadows.length > 0) {
+            const finalShadow = shadows.join(', ');
+            previewEl.style.textShadow = finalShadow;
+            shadowStyle = `text-shadow: ${finalShadow};`;
+        } else {
+            previewEl.style.textShadow = 'none';
         }
         
         const boxStyle = `background:${boxColor}; color:${textColor}; padding:4px 8px; border-radius:4px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${shadowStyle}`;
