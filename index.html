@@ -279,8 +279,9 @@
             size: "Text Size",
             words: "Words Per Screen",
             punct: "Punctuation",
-            color_text: "Text Color",
-            color_box: "Box Color",
+            color_text: "Text color",
+            color_box: "Box color",
+            text_shadow: "Text Shadow",
             lines_count: "Lines Count",
             anim_type: "Animation",
             mask_int: "Mask Intensity",
@@ -313,6 +314,7 @@
             punct: "Знаки препинания",
             color_text: "Цвет текста",
             color_box: "Цвет плашки",
+            text_shadow: "Тень текста",
             lines_count: "Количество строк",
             anim_type: "Анимация",
             mask_int: "Интенсивность",
@@ -435,6 +437,7 @@
         const initCaps = urlParams.get('caps') === 'true';
         const initCapsFirst = urlParams.get('cf') === 'true';
         const initSize = urlParams.get('s') || '1'; // 0, 1, 2, 3
+        const initShadow = urlParams.get('sh') !== null && urlParams.get('sh') !== '' ? urlParams.get('sh') : '2';
 
         // General Settings HTML
         let html = `
@@ -516,6 +519,14 @@
                         <div class="flex justify-between items-center">
                             <span class="text-xs font-bold" data-i18n="color_box">${I18N[lang].color_box}</span>
                             <input type="color" id="input-box-color" value="#000000" class="w-8 h-8 border-none bg-transparent cursor-pointer" oninput="updatePreviewText()">
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="text_shadow">${I18N[lang].text_shadow}</span>
+                                <span class="text-[10px] font-black text-primary uppercase" id="val-shadow">${initShadow}</span>
+                            </div>
+                            <input type="range" id="input-shadow" min="0" max="10" value="${initShadow}" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                                oninput="document.getElementById('val-shadow').innerText=this.value; updatePreviewText()">
                         </div>
                         <div class="space-y-3">
                             <div class="flex justify-between">
@@ -610,6 +621,7 @@
         const isCapsFirst = document.getElementById('btn-caps-first')?.dataset.state === 'on';
         const isPunct = document.getElementById('btn-punct')?.dataset.state === 'on';
         const sizeVal = parseInt(document.getElementById('input-size')?.value || 1);
+        const textShadow = parseInt(document.getElementById('input-shadow')?.value || 0);
         
         // Apply text scaling based on size slider (0=small, 1=medium, 2=large, 3=max)
         const scaleMap = { 0: 0.75, 1: 1.0, 2: 1.25, 3: 1.6 };
@@ -640,7 +652,9 @@
         const isPreset8 = activePresetId === '8';
         const textColor = document.getElementById('input-text-color')?.value || '#ffffff';
         const boxColor = document.getElementById('input-box-color')?.value || '#000000';
-        const boxStyle = `background:${boxColor}; color:${textColor}; padding:2px 15px; border-radius:4px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline;`;
+        const shadowStyle = textShadow > 0 ? `text-shadow: 2px 2px ${textShadow * 2}px rgba(0,0,0,0.8);` : '';
+        const boxStyle = `background:${boxColor}; color:${textColor}; padding:2px 15px; border-radius:10px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${shadowStyle}`;
+        const emptyBoxStyle = `background:transparent; color:${textColor}; padding:2px 15px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${shadowStyle}`;
         
         if (previewLinesCount === 1 || previewWordsCount === 1) {
             if (isPreset8) {
@@ -751,6 +765,7 @@
                 text_color: String(document.getElementById('input-text-color')?.value || '#ffffff'),
                 box_color: document.getElementById('input-box-color') ? String(document.getElementById('input-box-color').value) : null,
                 animation_type: document.getElementById('val-anim') ? String(document.getElementById('val-anim').innerText.toLowerCase()) : 'default',
+                text_shadow: document.getElementById('input-shadow') ? Number(document.getElementById('input-shadow').value) : null,
                 mask_intensity: document.getElementById('val-mask') ? String(document.getElementById('val-mask').innerText.toLowerCase()) : 'medium'
             }
         };
