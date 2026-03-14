@@ -685,10 +685,10 @@
         }
         
         if (textShadow > 0) {
-            // Более видимая база на 1, плавный рост дальше
-            const shBlur = textShadow * 2 + 1;
+            // Уменьшенные коэффиценты для "очень слабой" тени на 1
+            const shBlur = textShadow * 2.0; 
             shadows.push(`0px 0px ${shBlur}px rgba(0,0,0,1)`);
-            shadows.push(`0px 0px ${shBlur * 1.5}px rgba(0,0,0,0.7)`);
+            shadows.push(`0px 0px ${shBlur * 1.2}px rgba(0,0,0,0.6)`);
             
             // Применяем ко всему контейнеру превью для наследования всеми словами
             previewEl.style.textShadow = shadows.join(', ');
