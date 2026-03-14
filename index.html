@@ -294,6 +294,8 @@
             color_text: "Text color",
             color_box: "Box color",
             text_shadow: "Drop Shadow",
+            sh_intensity: "Intensity",
+            sh_blur: "Blur",
             text_stroke: "Stroke",
             lines_count: "Lines Count",
             anim_type: "Animation",
@@ -543,13 +545,30 @@
                             <input type="range" id="input-stroke" min="0" max="10" value="${initStroke}" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
                                 oninput="document.getElementById('val-stroke').innerText=this.value; updatePreviewText()">
                         </div>
-                        <div class="space-y-3">
-                            <div class="flex justify-between">
+                        <div class="space-y-4 pt-2">
+                            <div class="flex justify-between items-center">
                                 <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="text_shadow">${I18N[lang].text_shadow}</span>
-                                <span class="text-[10px] font-black text-primary uppercase" id="val-shadow">${initShadow}</span>
+                                <button id="btn-shadow" class="px-3 py-1 border border-primary text-[10px] font-black text-primary hover:bg-primary/10 transition-all uppercase" data-state="${initShadow > 0 ? 'on' : 'off'}" onclick="toggleShadowSection(this)">${initShadow > 0 ? 'ON' : 'OFF'}</button>
                             </div>
-                            <input type="range" id="input-shadow" min="0" max="15" value="${initShadow}" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
-                                oninput="document.getElementById('val-shadow').innerText=this.value; updatePreviewText()">
+                            <!-- Подпанель настроек тени -->
+                            <div id="shadow-settings" class="${initShadow > 0 ? '' : 'hidden'} space-y-5 pl-4 border-l border-primary/20 transition-all duration-300">
+                                <div class="space-y-3">
+                                    <div class="flex justify-between">
+                                        <span class="text-[10px] font-black tracking-widest text-on-surface-variant/60 uppercase" data-i18n="sh_intensity">${I18N[lang].sh_intensity}</span>
+                                        <span class="text-[10px] font-black text-primary uppercase" id="val-sh-intensity">${initShadow > 0 ? initShadow : 5}</span>
+                                    </div>
+                                    <input type="range" id="input-sh-intensity" min="1" max="10" value="${initShadow > 0 ? initShadow : 5}" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                                        oninput="document.getElementById('val-sh-intensity').innerText=this.value; updatePreviewText()">
+                                </div>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between">
+                                        <span class="text-[10px] font-black tracking-widest text-on-surface-variant/60 uppercase" data-i18n="sh_blur">${I18N[lang].sh_blur}</span>
+                                        <span class="text-[10px] font-black text-primary uppercase" id="val-sh-blur">5</span>
+                                    </div>
+                                    <input type="range" id="input-sh-blur" min="1" max="10" value="5" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                                        oninput="document.getElementById('val-sh-blur').innerText=this.value; updatePreviewText()">
+                                </div>
+                            </div>
                         </div>
                         <div class="space-y-3">
                             <div class="flex justify-between">
@@ -603,6 +622,21 @@
             container.style.backgroundImage = 'none';
         }
         
+        tg.HapticFeedback.impactOccurred('light');
+    }
+
+    function toggleShadowSection(btn) {
+        const state = btn.dataset.state === 'on' ? 'off' : 'on';
+        btn.dataset.state = state;
+        btn.innerText = state.toUpperCase();
+        
+        const settings = document.getElementById('shadow-settings');
+        if (settings) {
+            if (state === 'on') settings.classList.remove('hidden');
+            else settings.classList.add('hidden');
+        }
+        
+        updatePreviewText();
         tg.HapticFeedback.impactOccurred('light');
     }
 
@@ -715,16 +749,18 @@
             shadows.push(`-${sO}px 0px 0 #000`);
         }
         
-        if (textShadow > 0) {
-            // Плавная прогрессия от 1 до 15 с очень слабой базой на 1
-            const progress = textShadow / 15;
-            const shBlur = textShadow * 4.0; 
+        const shadowBtn = document.getElementById('btn-shadow');
+        const isShadowOn = shadowBtn && shadowBtn.dataset.state === 'on';
+        
+        if (isShadowOn) {
+            const shIntensity = parseInt(document.getElementById('input-sh-intensity')?.value || 5);
+            const shBlurVal = parseInt(document.getElementById('input-sh-blur')?.value || 5);
             
-            const alpha1 = (0.15 + progress * 0.8).toFixed(2);
-            const alpha2 = (0.05 + progress * 0.4).toFixed(2);
+            const blurRadius = shBlurVal * 3.5;
+            const shadowOpacity = (0.2 + (shIntensity / 10) * 0.8).toFixed(2);
             
-            shadows.push(`0px 0px ${shBlur}px rgba(0,0,0,${alpha1})`);
-            shadows.push(`0px 0px ${shBlur * 1.8}px rgba(0,0,0,${alpha2})`);
+            shadows.push(`0px 0px ${blurRadius}px rgba(0,0,0,${shadowOpacity})`);
+            shadows.push(`0px 0px ${blurRadius * 2}px rgba(0,0,0,${(shadowOpacity * 0.4).toFixed(2)})`);
             
             // Применяем ко всему контейнеру превью для наследования всеми словами
             previewEl.style.textShadow = shadows.join(', ');
