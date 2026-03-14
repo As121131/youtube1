@@ -640,6 +640,7 @@
         const scale = scaleMap[sizeVal] || 1.0;
         previewEl.style.transform = `scale(${scale})`;
         previewEl.style.transformOrigin = 'center center';
+        previewEl.style.textShadow = 'none'; // Reset before recalculation
         
         let allWords = ["sample", "text", "here", "is", "great"];
         
@@ -684,14 +685,13 @@
         }
         
         if (textShadow > 0) {
-            // Более мягкое и постепенное свечение
-            const shBlur = textShadow * 2;
+            // Более видимая база на 1, плавный рост дальше
+            const shBlur = textShadow * 2 + 1;
             shadows.push(`0px 0px ${shBlur}px rgba(0,0,0,1)`);
             shadows.push(`0px 0px ${shBlur * 1.5}px rgba(0,0,0,0.7)`);
-        }
-        
-        if (shadows.length > 0) {
-            shadowStyle = `text-shadow: ${shadows.join(', ')};`;
+            
+            // Применяем ко всему контейнеру превью для наследования всеми словами
+            previewEl.style.textShadow = shadows.join(', ');
         }
         
         const boxStyle = `background:${boxColor}; color:${textColor}; padding:4px 8px; border-radius:4px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${shadowStyle}`;
