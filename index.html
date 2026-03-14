@@ -455,6 +455,7 @@
         const initSize = urlParams.get('s') || '1'; // 0, 1, 2, 3
         const initStroke = urlParams.get('st') !== null && urlParams.get('st') !== '' ? urlParams.get('st') : '2';
         const initShadow = urlParams.get('sh') !== null && urlParams.get('sh') !== '' ? urlParams.get('sh') : '3';
+        const initShadowBlur = urlParams.get('shb') !== null && urlParams.get('shb') !== '' ? urlParams.get('shb') : '5';
 
         // General Settings HTML
         let html = `
@@ -563,9 +564,9 @@
                                 <div class="space-y-3">
                                     <div class="flex justify-between">
                                         <span class="text-[10px] font-black tracking-widest text-on-surface-variant/60 uppercase" data-i18n="sh_blur">${I18N[lang].sh_blur}</span>
-                                        <span class="text-[10px] font-black text-primary uppercase" id="val-sh-blur">5</span>
+                                        <span class="text-[10px] font-black text-primary uppercase" id="val-sh-blur">${initShadowBlur}</span>
                                     </div>
-                                    <input type="range" id="input-sh-blur" min="1" max="10" value="5" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                                    <input type="range" id="input-sh-blur" min="1" max="10" value="${initShadowBlur}" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
                                         oninput="document.getElementById('val-sh-blur').innerText=this.value; updatePreviewText()">
                                 </div>
                             </div>
@@ -865,6 +866,11 @@
         
         tg.HapticFeedback.notificationOccurred('success');
         
+        const shadowBtn = document.getElementById('btn-shadow');
+        const isShadowOn = shadowBtn && shadowBtn.dataset.state === 'on';
+        const shIntensity = isShadowOn ? Number(document.getElementById('input-sh-intensity')?.value || 5) : 0;
+        const shBlurVal = isShadowOn ? Number(document.getElementById('input-sh-blur')?.value || 5) : 5;
+
         const settings = {
             preset: String(activePresetId), 
             action: 'save',
@@ -880,8 +886,9 @@
                 text_color: String(document.getElementById('input-text-color')?.value || '#ffffff'),
                 box_color: document.getElementById('input-box-color') ? String(document.getElementById('input-box-color').value) : null,
                 animation_type: document.getElementById('val-anim') ? String(document.getElementById('val-anim').innerText.toLowerCase()) : 'default',
-                text_shadow: document.getElementById('input-shadow') ? Number(document.getElementById('input-shadow').value) : null,
-                text_stroke: document.getElementById('input-stroke') ? Number(document.getElementById('input-stroke').value) : null,
+                text_shadow: shIntensity,
+                text_shadow_blur: shBlurVal,
+                text_stroke: Number(document.getElementById('input-stroke')?.value || 0),
                 mask_intensity: document.getElementById('val-mask') ? String(document.getElementById('val-mask').innerText.toLowerCase()) : 'medium'
             }
         };
