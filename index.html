@@ -741,18 +741,28 @@
         let shadows = [];
         
         if (textStroke > 0) {
-            // Реалистичная имитация обводки
-            const sO = textStroke * 0.7;
-            shadows.push(`${sO}px ${sO}px 0 #000`);
-            shadows.push(`-${sO}px -${sO}px 0 #000`);
-            shadows.push(`${sO}px -${sO}px 0 #000`);
-            shadows.push(`-${sO}px ${sO}px 0 #000`);
+            // Гладкая и плотная обводка (Outline), убирающая "шипы" и "гребенку".
+            // Имитация гладкого закругленного контура (Outline\Border) из ASS.
+            const sO = textStroke * 0.8; 
             
-            // Заглушка для углов (для более круглой обводки)
-            shadows.push(`0px ${sO}px 0 #000`);
-            shadows.push(`0px -${sO}px 0 #000`);
-            shadows.push(`${sO}px 0px 0 #000`);
-            shadows.push(`-${sO}px 0px 0 #000`);
+            // Внешний контур: 36 направлений по кругу (каждые 10 градусов) для идеальной гладкости
+            for (let angle = 0; angle < 360; angle += 10) {
+                const rad = angle * Math.PI / 180;
+                const dx = Math.cos(rad) * sO;
+                const dy = Math.sin(rad) * sO;
+                shadows.push(`${dx.toFixed(2)}px ${dy.toFixed(2)}px 0 #000`);
+            }
+            
+            // Внутренний заливающий контур, чтобы при толстой обводке не было "дыр" внутри
+            if (sO > 2) {
+                const innerO = sO * 0.5;
+                for (let angle = 0; angle < 360; angle += 20) {
+                    const rad = angle * Math.PI / 180;
+                    const dx = Math.cos(rad) * innerO;
+                    const dy = Math.sin(rad) * innerO;
+                    shadows.push(`${dx.toFixed(2)}px ${dy.toFixed(2)}px 0 #000`);
+                }
+            }
         }
         
         let textShadows = [...shadows];
