@@ -759,34 +759,28 @@
         let boxShadow = 'none';
 
         if (isShadowOn) {
-            // СТРОГОЕ СООТВЕТСТВИЕ С generator.py
+            // ПРЕЦИЗИОННАЯ ИМИТАЦИЯ \bord + \blur ИЗ PYTHON
             const intensityVal = parseFloat(shIntensity);
             const blurVal = parseFloat(shBlurVal);
-            
-            // Прогресс интенсивности (от 0.0 до 1.0)
             const progress = intensityVal / 10.0;
-            // Формула прозрачности из Python: (0.25 + progress * 0.75)
             const opacity = (0.25 + progress * 0.75).toFixed(2);
-            
-            // Коэффициент размытия из Python: x4.5
-            // В CSS размытие выглядит иначе, поэтому используем x5.5 для визуального сходства
-            const cssBlur = blurVal * 5.5; 
-            
-            // В Python используется \bord на слое тени, что делает ее очень "толстой".
-            // В CSS имитируем это через многослойность и небольшие смещения.
             const shadowColor = `rgba(0,0,0,${opacity})`;
             
-            // Слой 1: Глубокое размытие (основное облако)
-            textShadows.push(`0 0 ${cssBlur}px ${shadowColor}`);
-            textShadows.push(`0 0 ${cssBlur * 1.5}px ${shadowColor}`);
-            
-            // Слой 2: "Плотность" вокруг букв (имитация \bord)
-            if (intensityVal > 0) {
-                const thickness = intensityVal * 0.8;
-                textShadows.push(`0 0 ${thickness}px ${shadowColor}`);
-                textShadows.push(`${thickness/2}px ${thickness/2}px ${cssBlur}px ${shadowColor}`);
-                textShadows.push(`-${thickness/2}px -${thickness/2}px ${cssBlur}px ${shadowColor}`);
+            // 1. Имитация \bord (густое ядро). Отрисовываем тень по кругу (8 направлений).
+            // Это дает ту самую "толщину", которой не хватает обычному text-shadow
+            const thickness = intensityVal * 0.7; 
+            for (let a = 0; a < 360; a += 45) {
+                const rng = a * Math.PI / 180;
+                const x = Math.cos(rng) * thickness;
+                const y = Math.sin(rng) * thickness;
+                textShadows.push(`${x.toFixed(1)}px ${y.toFixed(1)}px ${blurVal}px ${shadowColor}`);
             }
+            
+            // 2. Имитация \blur (мягкое облако)
+            const softBlur = blurVal * 4.5;
+            textShadows.push(`0 0 ${softBlur}px ${shadowColor}`);
+            textShadows.push(`0 0 ${softBlur * 2.0}px ${shadowColor}`);
+            textShadows.push(`0 0 ${softBlur * 3.5}px rgba(0,0,0,${(opacity * 0.5).toFixed(2)})`);
         }
         
         previewEl.style.filter = 'none';
