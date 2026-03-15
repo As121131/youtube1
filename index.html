@@ -790,7 +790,7 @@
         previewEl.style.textShadow = textShadows.length > 0 ? textShadows.join(', ') : 'none';
         
         const finalShadowStyle = textShadows.length > 0 ? `text-shadow: ${textShadows.join(', ')};` : '';
-        const boxStyle = `background:${boxColor}; color:${textColor}; padding:4px 8px; border-radius:4px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${finalShadowStyle} box-shadow: ${boxShadow};`;
+        const boxStyle = `background:${boxColor}; color:${textColor}; padding:4px 8px; border-radius:4px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${finalShadowStyle}`;
         const emptyBoxStyle = `background:transparent; color:${textColor}; padding:4px 8px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${finalShadowStyle}`;
         
         if (previewLinesCount === 1 || previewWordsCount === 1) {
