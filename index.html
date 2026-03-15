@@ -711,20 +711,20 @@
         const previewEl = document.getElementById('preview-text');
         if (!previewEl) return;
         
-        const wordsCount = parseInt(document.getElementById('input-words')?.value || 1);
-        const linesCount = parseInt(document.getElementById('input-lines')?.value || 1);
-        const isAllCaps = document.getElementById('btn-all-caps')?.dataset.state === 'on';
-        const isCapsFirst = document.getElementById('btn-caps-first')?.dataset.state === 'on';
-        const isPunct = document.getElementById('btn-punct')?.dataset.state === 'on';
-        const sizeVal = parseInt(document.getElementById('input-size')?.value || 1);
+        const wordsCount = parseInt(document.getElementById('input-words')?.value || 1) || 1;
+        const linesCount = parseInt(document.getElementById('input-lines')?.value || 1) || 1;
+        const isAllCaps = document.getElementById('btn-all-caps')?.dataset?.state === 'on';
+        const isCapsFirst = document.getElementById('btn-caps-first')?.dataset?.state === 'on';
+        const isPunct = document.getElementById('btn-punct')?.dataset?.state === 'on';
+        const sizeVal = parseInt(document.getElementById('input-size')?.value || 1) || 1;
         
         // Read new shadow parameters
         const shadowBtn = document.getElementById('btn-shadow');
-        const isShadowOn = shadowBtn && shadowBtn.dataset.state === 'on';
-        const shIntensity = parseInt(document.getElementById('input-sh-intensity')?.value || 5);
-        const shBlurVal = parseInt(document.getElementById('input-sh-blur')?.value || 5);
+        const isShadowOn = shadowBtn && shadowBtn.dataset?.state === 'on';
+        const shIntensity = parseInt(document.getElementById('input-sh-intensity')?.value || 5) || 5;
+        const shBlurVal = parseInt(document.getElementById('input-sh-blur')?.value || 5) || 5;
         
-        const textStroke = parseInt(document.getElementById('input-stroke')?.value || 0);
+        const textStroke = parseInt(document.getElementById('input-stroke')?.value || 0) || 0;
         const isPreset8 = activePresetId === '8';
         const isPreset13 = activePresetId === '13';
         
@@ -765,7 +765,7 @@
         
         const textColor = document.getElementById('input-text-color')?.value || '#ffffff';
         const boxColor = document.getElementById('input-box-color')?.value || '#000000';
-        const maskInt = document.getElementById('val-mask')?.innerText.toLowerCase() || 'medium';
+        const maskInt = (document.getElementById('val-mask')?.innerText || 'MEDIUM').toLowerCase();
         
         // Чтение цвета тени/обводки, если элемент есть, иначе #000
         const shColorVal = document.getElementById('input-shadow-color')?.value || '#000000';
@@ -1001,13 +1001,21 @@
         }, 150);
     }
 
-    let currentLang = 'EN';
-    document.getElementById('lang-toggle').onclick = () => {
-        currentLang = currentLang === 'EN' ? 'RU' : 'EN';
-        updateLanguage();
-        tg.HapticFeedback.impactOccurred('light');
-    };
+    currentLang = 'EN';
+    currentPreset = PRESETS[0];
+    activePresetId = '1';
 
+    // Toggle language
+    const langToggle = document.getElementById('lang-toggle');
+    if (langToggle) {
+        langToggle.onclick = () => {
+            currentLang = currentLang === 'EN' ? 'RU' : 'EN';
+            updateLanguage();
+            tg.HapticFeedback.impactOccurred('light');
+        };
+    }
+
+    // Initialize app
     updateLanguage();
     renderPresets();
 
