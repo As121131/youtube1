@@ -759,30 +759,33 @@
         let boxShadow = 'none';
 
         if (isShadowOn) {
-            // КОМБИНИРОВАННАЯ ТЕНЬ ДЛЯ ТЕКСТА (БЕЗ ВЛИЯНИЯ НА ПЛАШКУ)
+            // ФИНАЛЬНОЕ ИДЕАЛЬНОЕ СООТВЕТСТВИЕ:
+            // Чтобы получить массивное, плотное "ядро" тени без искажений (шипов),
+            // мы используем многократное наложение одного и того же мягкого размытия.
+            // В CSS множественное наложение text-shadow с одинаковым blur 
+            // делает центр абсолютно непрозрачным (как \bord), а края мягкими (как \blur).
+            
             const intensityVal = parseFloat(shIntensity);
             const blurVal = parseFloat(shBlurVal);
             const progress = intensityVal / 10.0;
             const opacity = (0.25 + progress * 0.75).toFixed(2);
             const shadowColor = `rgba(0,0,0,${opacity})`;
             
-            // Соответствие параметрам Python:
-            const bord = intensityVal * 1.8; // shadow_bord
-            const blur = blurVal * 4.5;     // shadow_blur
+            // Радиус размытия
+            const blur = blurVal * 4.5;
             
-            // 1. Имитация \bord (плотное ядро)
-            // Рисуем тень в 8 направлениях с возрастающим радиусом для максимальной густоты
-            const directions = [[1,0],[-1,0],[0,1],[0,-1],[0.7,0.7],[-0.7,0.7],[0.7,-0.7],[-0.7,-0.7]];
-            for (let r = 1; r <= bord; r += 2) {
-                directions.forEach(([dx, dy]) => {
-                    textShadows.push(`${dx * r}px ${dy * r}px ${blurVal}px ${shadowColor}`);
-                });
+            // Количество слоев зависит от ползунка ЗАТЕМНЕНИЕ (имитация толщины)
+            // При максимуме (10) делаем 15 слоев для получения "жирной" заливки.
+            const layersCount = Math.max(1, Math.floor(intensityVal * 1.5));
+            
+            // 1. Плотное ядро (имитация \bord) — накладываем несколько раз
+            for (let i = 0; i < layersCount; i++) {
+                textShadows.push(`0 0 ${blur}px ${shadowColor}`);
             }
             
-            // 2. Имитация \blur (мягкое облако)
-            textShadows.push(`0 0 ${blur}px ${shadowColor}`);
-            textShadows.push(`0 0 ${blur * 1.8}px ${shadowColor}`);
-            textShadows.push(`0 0 ${blur * 3}px rgba(0,0,0,${(opacity * 0.4).toFixed(2)})`);
+            // 2. Дополнительное широкое облако для плавного затухания
+            textShadows.push(`0 0 ${blur * 1.5}px rgba(0,0,0,${(opacity * 0.8).toFixed(2)})`);
+            textShadows.push(`0 0 ${blur * 2.5}px rgba(0,0,0,${(opacity * 0.5).toFixed(2)})`);
         }
         
         // Очищаем фильтры с контейнера, чтобы не подсвечивать черную плашку
