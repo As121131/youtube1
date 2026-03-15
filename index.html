@@ -4,7 +4,7 @@
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>Sublex - Pro Subtitles</title>
-    <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -272,7 +272,7 @@
         { id: '10', name: 'PRESET_10', cat: 'NEON', color: '#39FF14', css: 'font-weight:900; text-shadow: 0 0 20px #39FF14;', desc: 'Toxic green neon glow.' },
         { id: '11', name: 'PRESET_11', cat: 'KARAOKE', color: '#ffffff', css: 'font-weight:800; text-shadow: 2px 2px #0000FF66;', desc: 'Green karaoke highlight.' },
         { id: '12', name: 'PRESET_12', cat: 'HISTORY', color: '#ffffff', css: 'border-bottom: 2px solid #fff; font-weight:800;', desc: 'Two lines history effect.' },
-        { id: '13', name: 'PRESET_13', cat: 'GLASS', color: '#ffffff', css: 'font-weight:900; mix-blend-mode: difference;', desc: 'Glass inversion effect.' },
+        { id: '13', name: 'PRESET_13', cat: 'GLASS', color: '#ffffff', css: 'font-weight:900; font-family: Montserrat, sans-serif;', desc: 'Glass inversion effect.' },
         { id: '14', name: 'PRESET_14', cat: 'PREMIUM', color: '#ffffff', css: 'font-weight:900; text-shadow: 0 0 10px rgba(255,255,255,0.3);', desc: 'Premium Montserrat style.' }
     ];
 
@@ -312,8 +312,7 @@
             static: "STATIC",
             fade: "FADE",
             btn_commas: "COMMAS",
-            btn_caps: "CAPITALIZED",
-            profanity: "PROFANITY_FILTER"
+            btn_caps: "CAPITALIZED"
         },
         RU: {
             presets_title: "ПРЕСЕТЫ",
@@ -348,8 +347,7 @@
             static: "СТАТИКА",
             fade: "FADE",
             btn_commas: "ЗАПЯТЫЕ",
-            btn_caps: "ЗАГЛАВНЫЕ",
-            profanity: "ЦЕНЗУРА_МАТА"
+            btn_caps: "ЗАГЛАВНЫЕ"
         }
     };
 
@@ -441,6 +439,11 @@
                 css = css.replace(/background:[^;]+;?/, '').replace(/padding:[^;]+;?/, '');
             }
             preview.style.cssText = css;
+            if (activePresetId === '11' || activePresetId === '13' || activePresetId === '14') {
+                preview.style.fontFamily = "'Montserrat', sans-serif";
+            } else {
+                preview.style.fontFamily = "";
+            }
             preview.style.color = p.color;
         }
 
@@ -463,7 +466,7 @@
         const initShadowColor = urlParams.get('shc') ? '#' + urlParams.get('shc') : '#000000';
         const initTextColor = urlParams.get('tc') ? '#' + urlParams.get('tc') : p.color;
         const initBoxColor = urlParams.get('bc') ? '#' + urlParams.get('bc') : '#000000';
-        const initProfanity = urlParams.get('p') === 'true';
+        const initMask = urlParams.get('m') || 'medium';
 
         // General Settings HTML
         let html = `
@@ -527,11 +530,6 @@
                 <div class="pt-4 border-t border-outline-variant/10 flex items-center justify-between">
                     <span class="text-xs font-bold" data-i18n="caps">${I18N[lang].caps}</span>
                     <button id="btn-all-caps" class="px-4 py-1 border border-primary text-[10px] font-black text-primary hover:bg-primary/10 transition-all uppercase" data-state="${initCaps ? 'on' : 'off'}" onclick="toggleButton(this); updatePreviewText()">OFF</button>
-                </div>
-
-                <div class="pt-4 border-t border-outline-variant/10 flex items-center justify-between">
-                    <span class="text-xs font-bold" data-i18n="profanity">${I18N[lang].profanity}</span>
-                    <button id="btn-profanity" class="px-4 py-1 border border-primary text-[10px] font-black text-primary hover:bg-primary/10 transition-all uppercase" data-state="${initProfanity ? 'on' : 'off'}" onclick="toggleButton(this)">${initProfanity ? 'ON' : 'OFF'}</button>
                 </div>
 
                 <div class="pt-4 border-t border-outline-variant/10 flex items-center justify-between">
@@ -611,8 +609,8 @@
                                 <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="mask_int">${I18N[lang].mask_int}</span>
                                 <span class="text-[10px] font-black text-primary uppercase" id="val-mask">MEDIUM</span>
                             </div>
-                            <input type="range" id="input-mask" min="0" max="2" value="1" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
-                                oninput="const v=['WEAK','MEDIUM','STRONG']; document.getElementById('val-mask').innerText=v[this.value]">
+                            <input type="range" id="input-mask" min="0" max="2" value="${initMask === 'weak' ? 0 : (initMask === 'strong' ? 2 : 1)}" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                                oninput="const v=['WEAK','MEDIUM','STRONG']; document.getElementById('val-mask').innerText=v[this.value]; updatePreviewText()">
                         </div>
                     </div>
                 </div>
@@ -737,13 +735,22 @@
         
         if (isAllCaps) {
             processedWords = processedWords.map(w => w.toUpperCase());
+        } else if (isPreset13) {
+            if (!isPunct) {
+                processedWords = processedWords.map(w => w.toLowerCase());
+            }
         } else if (isCapsFirst) {
             processedWords[0] = processedWords[0].charAt(0).toUpperCase() + processedWords[0].slice(1);
         }
         
         // Для предпросмотра, если выбран режим AUTO (0), показываем 2 слова построчно
-        const previewWordsCount = wordsCount === 0 ? 2 : wordsCount;
-        const previewLinesCount = linesCount === 0 ? 1 : linesCount;
+        let previewWordsCount = wordsCount === 0 ? 2 : wordsCount;
+        let previewLinesCount = linesCount === 0 ? 1 : linesCount;
+
+        if (isPreset13) {
+            previewWordsCount = 2; // Preset 13 always shows 2 words
+            previewLinesCount = 2; // And 2 lines (1 word per line often, but split by 2 usually)
+        }
         
         let selectedWords = processedWords.slice(0, previewWordsCount);
         if (isPunct && selectedWords.length > 1) {
@@ -753,6 +760,8 @@
         const isPreset8 = activePresetId === '8';
         const textColor = document.getElementById('input-text-color')?.value || '#ffffff';
         const boxColor = document.getElementById('input-box-color')?.value || '#000000';
+        const maskInt = document.getElementById('val-mask')?.innerText.toLowerCase() || 'medium';
+        const isPreset13 = activePresetId === '13';
         
         // Чтение цвета тени/обводки, если элемент есть, иначе #000
         const shColorVal = document.getElementById('input-shadow-color')?.value || '#000000';
@@ -831,13 +840,32 @@
         
         // Очищаем фильтры с контейнера, чтобы не подсвечивать черную плашку
         previewEl.style.filter = 'none';
+        previewEl.style.mixBlendMode = 'normal';
+        
+        if (activePresetId === '13') {
+            const intensityMap = { 'weak': 0.3, 'medium': 0.6, 'strong': 1.0 };
+            const op = intensityMap[maskInt] || 0.6;
+            previewEl.style.mixBlendMode = 'difference';
+            previewEl.style.color = `rgba(255, 255, 255, ${op})`;
+        }
+
         previewEl.style.textShadow = textShadows.length > 0 ? textShadows.join(', ') : 'none';
         
         const finalShadowStyle = textShadows.length > 0 ? `text-shadow: ${textShadows.join(', ')};` : '';
         const boxStyle = `background:${boxColor}; color:${textColor}; padding:4px 8px; border-radius:4px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${finalShadowStyle}`;
         const emptyBoxStyle = `background:transparent; color:${textColor}; padding:4px 8px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${finalShadowStyle}`;
         
-        if (previewLinesCount === 1 || previewWordsCount === 1) {
+        if (isPreset13) {
+            const op = ({ 'weak': 0.3, 'medium': 0.6, 'strong': 1.0 })[maskInt] || 0.6;
+            previewEl.style.mixBlendMode = 'difference';
+            previewEl.style.color = `rgba(255, 255, 255, ${op})`;
+            previewEl.style.lineHeight = '0.75';
+            previewEl.style.letterSpacing = '-0.05em';
+            previewEl.style.fontWeight = '900';
+            
+            // Layout for 13: 2 words, split into 2 lines
+            previewEl.innerHTML = `${selectedWords[0]}<br>${selectedWords[1] || ''}`;
+        } else if (previewLinesCount === 1 || previewWordsCount === 1) {
             if (isPreset8) {
                 const first = selectedWords[0];
                 const rest = selectedWords.slice(1).join(' ');
@@ -955,8 +983,7 @@
                 text_shadow_blur: shBlurVal,
                 text_stroke: Number(document.getElementById('input-stroke')?.value || 0),
                 shadow_color: document.getElementById('input-shadow-color') ? String(document.getElementById('input-shadow-color').value.replace('#', '')) : null,
-                mask_intensity: document.getElementById('val-mask') ? String(document.getElementById('val-mask').innerText.toLowerCase()) : 'medium',
-                profanity_filter: document.getElementById('btn-profanity')?.dataset.state === 'on'
+                mask_intensity: document.getElementById('val-mask') ? String(document.getElementById('val-mask').innerText.toLowerCase()) : 'medium'
             }
         };
 
