@@ -711,6 +711,19 @@
         const previewEl = document.getElementById('preview-text');
         if (!previewEl) return;
         
+        const wordsCount = parseInt(document.getElementById('input-words')?.value || 1);
+        const linesCount = parseInt(document.getElementById('input-lines')?.value || 1);
+        const isAllCaps = document.getElementById('btn-all-caps')?.dataset.state === 'on';
+        const isCapsFirst = document.getElementById('btn-caps-first')?.dataset.state === 'on';
+        const isPunct = document.getElementById('btn-punct')?.dataset.state === 'on';
+        const sizeVal = parseInt(document.getElementById('input-size')?.value || 1);
+        
+        // Read new shadow parameters
+        const shadowBtn = document.getElementById('btn-shadow');
+        const isShadowOn = shadowBtn && shadowBtn.dataset.state === 'on';
+        const shIntensity = parseInt(document.getElementById('input-sh-intensity')?.value || 5);
+        const shBlurVal = parseInt(document.getElementById('input-sh-blur')?.value || 5);
+        
         const textStroke = parseInt(document.getElementById('input-stroke')?.value || 0);
         const isPreset8 = activePresetId === '8';
         const isPreset13 = activePresetId === '13';
