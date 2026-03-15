@@ -720,7 +720,7 @@
     let isLineAutoUpdating = false;
 
     function updatePreviewText() {
-        if (isLineAutoUpdating) return;
+        // Убираем ранний возврат, но используем флаг внутри для предотвращения бесконечного цикла
         const previewEl = document.getElementById('preview-text');
         if (!previewEl) return;
         
@@ -904,6 +904,8 @@
         // Автоматическое переключение счетчика строк, если текст не помещается
         requestAnimationFrame(() => {
             const linesInput = document.getElementById('input-lines');
+            const valLines = document.getElementById('val-lines');
+            
             if (linesInput && !isLineAutoUpdating) {
                 const actualLines = getActualLineCount(previewEl);
                 const currentMax = parseInt(linesInput.value);
@@ -911,13 +913,17 @@
                 // Если текст реально занял больше строк, чем в настройках (но не больше 3)
                 if (actualLines > currentMax && currentMax !== 0 && actualLines <= 3) {
                     isLineAutoUpdating = true;
+                    
+                    // Обновляем слайдер и значение
                     linesInput.value = actualLines;
-                    const valLines = document.getElementById('val-lines');
                     if (valLines) valLines.innerText = actualLines;
                     
-                    // Перерисовываем с правильным разбиением (чтобы <br> встали в нужные места)
+                    // Перерисовываем с правильным разбиением
                     updatePreviewText();
+                    
                     isLineAutoUpdating = false;
+                    tg.HapticFeedback.impactOccurred('medium');
+                    console.log(`Auto-switched to ${actualLines} lines`);
                 }
             }
         });
