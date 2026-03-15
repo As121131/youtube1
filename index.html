@@ -759,28 +759,30 @@
         let boxShadow = 'none';
 
         if (isShadowOn) {
-            // ПРЕЦИЗИОННАЯ ИМИТАЦИЯ \bord + \blur ИЗ PYTHON
+            // ТОЧНОЕ СООТВЕТСТВИЕ ВИЗУАЛУ ИЗ ВИДЕО (БЕЗ ДИЧИ)
             const intensityVal = parseFloat(shIntensity);
             const blurVal = parseFloat(shBlurVal);
             const progress = intensityVal / 10.0;
             const opacity = (0.25 + progress * 0.75).toFixed(2);
+            
+            // В видео тень ОЧЕНЬ жирная и мягкая. 
+            // Используем drop-shadow для мягкости и один text-shadow для плотности центра.
             const shadowColor = `rgba(0,0,0,${opacity})`;
+            const blurRadius = blurVal * 3.5;
+            const thickness = intensityVal * 0.5;
             
-            // 1. Имитация \bord (густое ядро). Отрисовываем тень по кругу (8 направлений).
-            // Это дает ту самую "толщину", которой не хватает обычному text-shadow
-            const thickness = intensityVal * 0.7; 
-            for (let a = 0; a < 360; a += 45) {
-                const rng = a * Math.PI / 180;
-                const x = Math.cos(rng) * thickness;
-                const y = Math.sin(rng) * thickness;
-                textShadows.push(`${x.toFixed(1)}px ${y.toFixed(1)}px ${blurVal}px ${shadowColor}`);
-            }
+            // Оптимизация для плавности перемещения
+            previewEl.style.willChange = 'filter';
             
-            // 2. Имитация \blur (мягкое облако)
-            const softBlur = blurVal * 4.5;
-            textShadows.push(`0 0 ${softBlur}px ${shadowColor}`);
-            textShadows.push(`0 0 ${softBlur * 2.0}px ${shadowColor}`);
-            textShadows.push(`0 0 ${softBlur * 3.5}px rgba(0,0,0,${(opacity * 0.5).toFixed(2)})`);
+            // Комбинируем для "густого" эффекта как на фото "ПОСТУПАЕТ ТОЧНО ТАК"
+            // Первый drop-shadow создает плотное ядро (\bord), второй - мягкое облако (\blur)
+            previewEl.style.filter = `drop-shadow(0 0 ${thickness}px ${shadowColor}) drop-shadow(0 0 ${blurRadius}px ${shadowColor})`;
+            
+            // Добавляем минимальный text-shadow для четкости контуров в центре
+            textShadows.push(`0 0 ${thickness}px ${shadowColor}`);
+        } else {
+            previewEl.style.filter = 'none';
+            previewEl.style.willChange = 'auto';
         }
         
         previewEl.style.filter = 'none';
