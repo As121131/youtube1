@@ -697,7 +697,30 @@
         if (dropdown) dropdown.classList.add('hidden');
     });
 
+    function getActualLineCount(el) {
+        if (!el) return 0;
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const rects = range.getClientRects();
+        if (rects.length === 0) return 0;
+        
+        let count = 0;
+        let lastBottom = -1;
+        for (let i = 0; i < rects.length; i++) {
+            const rect = rects[i];
+            // Если разница между низом текущего прямоугольника и предыдущего больше половины высоты, это новая строка
+            if (Math.abs(rect.bottom - lastBottom) > rect.height / 2) {
+                count++;
+                lastBottom = rect.bottom;
+            }
+        }
+        return count;
+    }
+
+    let isLineAutoUpdating = false;
+
     function updatePreviewText() {
+        if (isLineAutoUpdating) return;
         const previewEl = document.getElementById('preview-text');
         if (!previewEl) return;
         
@@ -877,6 +900,27 @@
                 }
             }
         }
+
+        // Автоматическое переключение счетчика строк, если текст не помещается
+        requestAnimationFrame(() => {
+            const linesInput = document.getElementById('input-lines');
+            if (linesInput && !isLineAutoUpdating) {
+                const actualLines = getActualLineCount(previewEl);
+                const currentMax = parseInt(linesInput.value);
+                
+                // Если текст реально занял больше строк, чем в настройках (но не больше 3)
+                if (actualLines > currentMax && currentMax !== 0 && actualLines <= 3) {
+                    isLineAutoUpdating = true;
+                    linesInput.value = actualLines;
+                    const valLines = document.getElementById('val-lines');
+                    if (valLines) valLines.innerText = actualLines;
+                    
+                    // Перерисовываем с правильным разбиением (чтобы <br> встали в нужные места)
+                    updatePreviewText();
+                    isLineAutoUpdating = false;
+                }
+            }
+        });
     }
 
     function toggleButton(btn) {
@@ -901,14 +945,22 @@
     function updateLivePreview() {
         const xEl = document.getElementById('input-pos-x');
         const yEl = document.getElementById('input-pos-y');
-        const x = xEl ? xEl.value : 50;
-        const y = yEl ? yEl.value : 70;
+        const x = xEl ? parseInt(xEl.value) : 50;
+        const y = yEl ? parseInt(yEl.value) : 70;
         
         const wrapper = document.getElementById('preview-text-wrapper');
-        if (wrapper) {
+        const previewText = document.getElementById('preview-text');
+        
+        if (wrapper && previewText) {
             wrapper.style.left = `${x}%`;
             wrapper.style.top = `${y}%`;
             wrapper.style.transform = `translate(-50%, -50%)`;
+            
+            // Динамическое ограничение ширины: текст не должен выходить за края контейнера.
+            // При смещении от центра доступная ширина сужается.
+            const availWidth = 2 * Math.min(x, 100 - x);
+            // Ограничиваем максимум 95%, чтобы оставался небольшой зазор
+            previewText.style.maxWidth = `${Math.min(95, availWidth)}%`;
         }
         updatePreviewText();
     }
