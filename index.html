@@ -759,32 +759,33 @@
         let boxShadow = 'none';
 
         if (isShadowOn) {
-            // ТОЧНОЕ СООТВЕТСТВИЕ ВИЗУАЛУ ИЗ ВИДЕО (БЕЗ ДИЧИ)
+            // КОМБИНИРОВАННАЯ ТЕНЬ ДЛЯ ТЕКСТА (БЕЗ ВЛИЯНИЯ НА ПЛАШКУ)
             const intensityVal = parseFloat(shIntensity);
             const blurVal = parseFloat(shBlurVal);
             const progress = intensityVal / 10.0;
             const opacity = (0.25 + progress * 0.75).toFixed(2);
-            
-            // В видео тень ОЧЕНЬ жирная и мягкая. 
-            // Используем drop-shadow для мягкости и один text-shadow для плотности центра.
             const shadowColor = `rgba(0,0,0,${opacity})`;
-            const blurRadius = blurVal * 3.5;
-            const thickness = intensityVal * 0.5;
             
-            // Оптимизация для плавности перемещения
-            previewEl.style.willChange = 'filter';
+            // Соответствие параметрам Python:
+            const bord = intensityVal * 1.8; // shadow_bord
+            const blur = blurVal * 4.5;     // shadow_blur
             
-            // Комбинируем для "густого" эффекта как на фото "ПОСТУПАЕТ ТОЧНО ТАК"
-            // Первый drop-shadow создает плотное ядро (\bord), второй - мягкое облако (\blur)
-            previewEl.style.filter = `drop-shadow(0 0 ${thickness}px ${shadowColor}) drop-shadow(0 0 ${blurRadius}px ${shadowColor})`;
+            // 1. Имитация \bord (плотное ядро)
+            // Рисуем тень в 8 направлениях с возрастающим радиусом для максимальной густоты
+            const directions = [[1,0],[-1,0],[0,1],[0,-1],[0.7,0.7],[-0.7,0.7],[0.7,-0.7],[-0.7,-0.7]];
+            for (let r = 1; r <= bord; r += 2) {
+                directions.forEach(([dx, dy]) => {
+                    textShadows.push(`${dx * r}px ${dy * r}px ${blurVal}px ${shadowColor}`);
+                });
+            }
             
-            // Добавляем минимальный text-shadow для четкости контуров в центре
-            textShadows.push(`0 0 ${thickness}px ${shadowColor}`);
-        } else {
-            previewEl.style.filter = 'none';
-            previewEl.style.willChange = 'auto';
+            // 2. Имитация \blur (мягкое облако)
+            textShadows.push(`0 0 ${blur}px ${shadowColor}`);
+            textShadows.push(`0 0 ${blur * 1.8}px ${shadowColor}`);
+            textShadows.push(`0 0 ${blur * 3}px rgba(0,0,0,${(opacity * 0.4).toFixed(2)})`);
         }
         
+        // Очищаем фильтры с контейнера, чтобы не подсвечивать черную плашку
         previewEl.style.filter = 'none';
         previewEl.style.textShadow = textShadows.length > 0 ? textShadows.join(', ') : 'none';
         
