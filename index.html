@@ -759,17 +759,30 @@
         let boxShadow = 'none';
 
         if (isShadowOn) {
-            const intensity = shIntensity / 10;
-            const blur = shBlurVal * 1.8;
-            const opacity = (0.4 + intensity * 0.6).toFixed(2);
+            // ТОЧНАЯ СИНХРОНИЗАЦИЯ С generator.py
+            const intensityVal = parseFloat(shIntensity);
+            const blurVal = parseFloat(shBlurVal);
             
-            // Тень для текста
-            textShadows.push(`0 0 ${blur}px rgba(0,0,0,${opacity})`);
-            textShadows.push(`0 0 ${blur * 2.5}px rgba(0,0,0,${(opacity * 0.5).toFixed(2)})`);
+            // Коэффициенты из Python: 4.5 для блюра, 1.8 для толщины
+            const cssBlur = blurVal * 3.5; // Слегка меньше для CSS, так как он резче
+            const cssSpread = intensityVal * 1.5; 
             
-            // Тень для плашки (только если пресет 8)
+            // Прозрачность: в Python (0.25 + progress * 0.75)
+            const progress = intensityVal / 10.0;
+            const opacity = (0.3 + progress * 0.7).toFixed(2);
+            
+            // Тень для текста (слоистая для плотности)
+            textShadows.push(`0 0 ${cssBlur}px rgba(0,0,0,${opacity})`);
+            // Добавляем "толщину" через смещение (имитация \bord)
+            if (intensityVal > 2) {
+                const off = intensityVal * 0.3;
+                textShadows.push(`${off}px ${off}px ${cssBlur * 1.2}px rgba(0,0,0,${opacity})`);
+                textShadows.push(`-${off}px -${off}px ${cssBlur * 1.2}px rgba(0,0,0,${opacity})`);
+            }
+            
+            // Тень для плашки (у box-shadow есть spread!)
             if (isPreset8) {
-                boxShadow = `0 0 ${blur}px rgba(0,0,0,${opacity}), 0 0 ${blur * 2}px rgba(0,0,0,${(opacity * 0.4).toFixed(2)})`;
+                boxShadow = `0 0 ${cssBlur}px ${cssSpread}px rgba(0,0,0,${opacity}), 0 0 ${cssBlur * 2}px ${cssSpread * 0.5}px rgba(0,0,0,${(opacity * 0.5)})`;
             }
         }
         
