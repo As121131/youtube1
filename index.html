@@ -139,17 +139,20 @@
             background: linear-gradient(to right, #ff008022, #7928ca22, #0070f322);
             pointer-events: none;
         }
-        .stripes-bg {
-            background: linear-gradient(to right, 
-                #ff0000 0%, #ff7f00 12.5%, #ffff00 25%, #7fff00 37.5%, 
-                #00ff00 50%, #00ff7f 62.5%, #00ffff 75%, #007fff 87.5%, #0000ff 100%
-            );
-            background-size: 200% 100%;
-            animation: moveStripes 10s linear infinite;
+        .mosaic-vibrant-bg {
+            background-color: #000;
+            background-image: 
+                linear-gradient(45deg, #ff0000 25%, transparent 25%), 
+                linear-gradient(-45deg, #00ff00 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #0000ff 75%), 
+                linear-gradient(-45deg, transparent 75%, #ffff00 75%);
+            background-size: 40px 40px;
         }
-        @keyframes moveStripes {
-            from { background-position: 0% 50%; }
-            to { background-position: 100% 50%; }
+        .photo-bg {
+            background-image: url('file:///C:/Users/zudev/.gemini/antigravity/brain/109cffa9-9a1d-4319-a6f1-7d819dbb2f4e/preview_background_photo_1773625534320.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
         }
         .photo-bg {
             background-image: url('file:///C:/Users/zudev/.gemini/antigravity/brain/109cffa9-9a1d-4319-a6f1-7d819dbb2f4e/preview_background_photo_1773625534320.png');
@@ -251,8 +254,8 @@
                 </button>
                 <button onclick="setPreviewBackground('black')" class="w-5 h-5 border border-white/10 bg-black rounded-full hover:border-primary transition-all" title="Black Background"></button>
                 <button onclick="setPreviewBackground('white')" class="w-5 h-5 border border-black/10 bg-white rounded-full hover:border-primary transition-all" title="White Background"></button>
-                <button onclick="setPreviewBackground('stripes')" class="w-5 h-5 border border-white/20 bg-primary/40 rounded-full hover:border-primary transition-all overflow-hidden relative" title="Stripes Background">
-                    <div class="absolute inset-0 stripes-bg scale-150"></div>
+                <button onclick="setPreviewBackground('vibrant')" class="w-5 h-5 border border-white/20 bg-primary/40 rounded-full hover:border-primary transition-all overflow-hidden relative" title="Vibrant Mosaic">
+                    <div class="absolute inset-0 mosaic-vibrant-bg"></div>
                 </button>
                 <button onclick="setPreviewBackground('photo')" class="w-5 h-5 border border-white/20 bg-surface-container rounded-full hover:border-primary transition-all overflow-hidden flex items-center justify-center" title="Photo Background">
                     <span class="material-symbols-outlined text-[10px]">image</span>
@@ -700,9 +703,9 @@
         controls.innerHTML = html;
         showView('editor');
         
-        // Автоматически включаем яркий фон для 13 пресета, чтобы увидеть маску
+        // Автоматически включаем яркую мозаику для 13 пресета
         if (p.id === '13') {
-            setPreviewBackground('stripes');
+            setPreviewBackground('vibrant');
         } else {
             setPreviewBackground('default');
         }
