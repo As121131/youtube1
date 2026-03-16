@@ -141,12 +141,12 @@
         }
         .stripes-bg {
             background: linear-gradient(to right, 
-                #FF3B30 0% 16.6%, 
-                #FF9500 16.6% 33.3%, 
-                #FFCC00 33.3% 50%, 
-                #4CD964 50% 66.6%, 
-                #007AFF 66.6% 83.3%, 
-                #5856D6 83.3% 100%
+                #FF0000 0% 16.6%, 
+                #FF8000 16.6% 33.3%, 
+                #FFFF00 33.3% 50%, 
+                #00FF00 50% 66.6%, 
+                #0000FF 66.6% 83.3%, 
+                #8000FF 83.3% 100%
             );
         }
     </style>
@@ -890,16 +890,13 @@
             textShadows.push(`0 0 ${blur * 2.5}px rgba(${rgbColor.r},${rgbColor.g},${rgbColor.b},${(opacity * 0.5).toFixed(2)})`);
         }
         
-        // Очищаем фильтры с контейнера, чтобы не подсвечивать черную плашку
+        // Очищаем фильтры и режимы наложения перед расчётом
         previewEl.style.filter = 'none';
         previewEl.style.mixBlendMode = 'normal';
-        
-        if (activePresetId === '13') {
-            const intensityMap = { 'weak': 0.3, 'medium': 0.6, 'strong': 1.0 };
-            const op = intensityMap[maskInt] || 0.6;
-            previewEl.style.mixBlendMode = 'difference';
-            previewEl.style.color = `rgba(255, 255, 255, ${op})`;
-        }
+        previewEl.style.backgroundColor = 'transparent';
+        previewEl.style.lineHeight = '1.2'; // Reset
+        previewEl.style.letterSpacing = 'normal'; // Reset
+        previewEl.style.fontWeight = '900';
 
         previewEl.style.textShadow = textShadows.length > 0 ? textShadows.join(', ') : 'none';
         
@@ -910,22 +907,22 @@
         if (isPreset13) {
             const intensityMap = { 'weak': 0.3, 'medium': 0.6, 'strong': 1.0 };
             const op = intensityMap[maskInt] || 0.6;
+            
+            // Настройка режима инверсии (кастомизация маски)
             previewEl.style.mixBlendMode = 'difference';
             
-            // Inversion logic
+            // В 13 пресете используется белый цвет для инверсии или выбранный из маски
             const rgb = hexToRgb(textColor);
             previewEl.style.color = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${op})`;
+            
             previewEl.style.lineHeight = '0.75';
             previewEl.style.letterSpacing = '-0.05em';
             previewEl.style.fontWeight = '900';
+            previewEl.style.fontFamily = "'Montserrat', sans-serif";
             
-            // Real mask effect: backdrop blur and a slight box if desired
-            // In the renderer, it's a tight text mask.
-            previewEl.style.backgroundColor = 'transparent';
-            
-            // Split based on lines count
+            // Отрисовка текста
             if (previewLinesCount === 1) {
-                previewEl.innerHTML = selectedWords.join(' ');
+                previewEl.innerText = selectedWords.join(' ');
             } else {
                 const perLine = Math.ceil(selectedWords.length / previewLinesCount);
                 let linesArr = [];
