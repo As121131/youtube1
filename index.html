@@ -408,7 +408,11 @@
             static: "STATIC",
             fade: "FADE",
             btn_commas: "COMMAS",
-            btn_caps: "CAPITALIZED"
+            btn_caps: "CAPITALIZED",
+            history_mode: "History Mode",
+            history_lines: "History Lines",
+            line_style: "Active Line Style",
+            underline: "Underline"
         },
         RU: {
             presets_title: "ПРЕСЕТЫ",
@@ -443,7 +447,11 @@
             static: "СТАТИКА",
             fade: "FADE",
             btn_commas: "ЗАПЯТЫЕ",
-            btn_caps: "ЗАГЛАВНЫЕ"
+            btn_caps: "ЗАГЛАВНЫЕ",
+            history_mode: "Режим истории",
+            history_lines: "Строк истории",
+            line_style: "Стиль активной строки",
+            underline: "Подчеркивание"
         }
     };
 
@@ -477,14 +485,15 @@
                         <span class="font-label text-[8px] text-on-surface-variant uppercase">Online</span>
                     </div>
                 </div>
-                <div class="flex-1 flex items-center justify-center relative bg-surface-container-low border border-outline-variant/10">
+                <div class="flex-1 flex items-center justify-center relative bg-surface-container-low border border-outline-variant/10 group-hover:bg-primary/5 transition-colors">
                     <p class="text-xl font-black uppercase text-center px-2" style="${p.css} color:${p.color}">${p.name}</p>
-                    <div class="absolute inset-0 scanline opacity-10 pointer-events-none"></div>
+                    <div class="absolute inset-x-0 bottom-0 top-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                         <button class="bg-primary text-on-primary px-4 py-2 font-black text-xs uppercase tracking-widest active:scale-95 transition-transform" onclick="event.stopPropagation(); currentPreset=p; saveChanges();">SELECT</button>
+                    </div>
                 </div>
                 <div class="z-10 border-t border-outline-variant/30 pt-4 mt-auto">
                     <p class="font-headline text-lg font-black tracking-tighter uppercase leading-none">${p.name}</p>
                 </div>
-                <div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             `;
             card.onclick = () => {
                 currentPreset = p;
@@ -538,7 +547,7 @@
                 css = css.replace(/background:[^;]+;?/, '').replace(/padding:[^;]+;?/, '');
             }
             preview.style.cssText = css;
-            if (activePresetId === '11' || activePresetId === '13' || activePresetId === '14') {
+            if (activePresetId === '11' || activePresetId === '12' || activePresetId === '13' || activePresetId === '14') {
                 preview.style.fontFamily = "'Montserrat', sans-serif";
             } else {
                 preview.style.fontFamily = "";
@@ -566,6 +575,9 @@
         const initTextColor = currentUrlParams.get('tc') ? '#' + currentUrlParams.get('tc') : p.color;
         const initBoxColor = currentUrlParams.get('bc') ? '#' + currentUrlParams.get('bc') : '#000000';
         const initMask = currentUrlParams.get('m') || 'medium';
+        const initHistory = currentUrlParams.get('hist') !== 'false'; // Default true
+        const initUnderline = currentUrlParams.get('und') !== 'false'; // Default true
+        const initHistLines = currentUrlParams.get('hl') || '1';
 
         // General Settings HTML
         let html = `
@@ -696,7 +708,43 @@
                     </div>
                 </div>
              `;
-        if (p.id === '12' || p.id === '14') {
+        if (p.id === '12') {
+             html += `
+                <div class="space-y-6 bg-surface-container-low p-6 border border-outline-variant/20">
+                    <p class="text-[10px] font-black tracking-[0.3em] text-primary uppercase mb-4">HISTORY_CORE</p>
+                    <div class="flex flex-col gap-6">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold" data-i18n="history_mode">${I18N[lang].history_mode}</span>
+                            <button id="btn-history-mode" class="px-4 py-1 border border-primary text-[10px] font-black text-primary hover:bg-primary/10 transition-all uppercase" data-state="${initHistory ? 'on' : 'off'}" onclick="toggleButton(this); updatePreviewText()">${initHistory ? I18N[lang].on : I18N[lang].off}</button>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="history_lines">${I18N[lang].history_lines}</span>
+                                <span class="text-[10px] font-black text-primary uppercase" id="val-hist-lines">${initHistLines}</span>
+                            </div>
+                            <input type="range" id="input-hist-lines" min="1" max="2" value="${initHistLines}" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                                oninput="document.getElementById('val-hist-lines').innerText=this.value; updatePreviewText()">
+                        </div>
+                        <div class="pt-4 border-t border-outline-variant/10 flex items-center justify-between">
+                            <span class="text-xs font-bold" data-i18n="line_style">${I18N[lang].line_style}</span>
+                            <button id="btn-underline" class="px-4 py-1 border border-primary text-[10px] font-black text-primary hover:bg-primary/10 transition-all uppercase" data-state="${initUnderline ? 'on' : 'off'}" data-i18n="underline" onclick="toggleButton(this); updatePreviewText()">${I18N[lang].underline}</button>
+                        </div>
+                        <div class="flex justify-between items-center bg-outline-variant/5 p-2 rounded-sm border border-outline-variant/10">
+                            <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="color_shadow_stroke">${I18N[lang].color_shadow_stroke}</span>
+                            <input type="color" id="input-shadow-color" value="${initShadowColor}" class="w-6 h-6 border-none bg-transparent cursor-pointer" oninput="updatePreviewText()">
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="text_stroke">${I18N[lang].text_stroke}</span>
+                                <span class="text-[10px] font-black text-primary uppercase" id="val-stroke">${initStroke}</span>
+                            </div>
+                            <input type="range" id="input-stroke" min="0" max="10" value="${initStroke}" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                                oninput="document.getElementById('val-stroke').innerText=this.value; updatePreviewText()">
+                        </div>
+                    </div>
+                </div>
+             `;
+        } else if (p.id === '14') {
              html += `
                 <div class="space-y-6 bg-surface-container-low p-6 border border-outline-variant/20">
                     <p class="text-[10px] font-black tracking-[0.3em] text-primary uppercase mb-4">PRESET_OPTIONS</p>
@@ -743,9 +791,9 @@
         controls.innerHTML = html;
         showView('editor');
         
-        // Автоматически включаем яркую мозаику для 13 пресета
+        // Автоматически включаем яркий фон для 13 пресета
         if (p.id === '13') {
-            setPreviewBackground('vibrant');
+            setPreviewBackground('photo');
         } else {
             setPreviewBackground('default');
         }
@@ -760,10 +808,14 @@
         // Reset
         container.style.backgroundColor = '';
         container.style.backgroundImage = '';
-        container.classList.remove('mosaic-bg', 'mosaic-vibrant-bg', 'stripes-bg', 'photo-bg');
+        container.classList.remove('mosaic-bg', 'mosaic-vibrant-bg', 'stripes-bg');
         container.style.animation = '';
         
-        if (color === 'black') {
+        if (color === 'photo') {
+            container.style.backgroundImage = 'url("file:///C:/Users/zudev/.gemini/antigravity/brain/109cffa9-9a1d-4319-a6f1-7d819dbb2f4e/preview_background_photo_1773625534320_1773666422824.png")';
+            container.style.backgroundSize = 'cover';
+            container.style.backgroundPosition = 'center';
+        } else if (color === 'black') {
             container.style.backgroundColor = '#000000';
             container.style.backgroundImage = 'none';
         } else if (color === 'white') {
@@ -1007,15 +1059,24 @@
         
         if (isP12) {
             // Для 12 пресета показываем две строки (история)
-            const words = selectedWords;
-            if (words.length > 1) {
-                const mid = Math.ceil(words.length / 2);
-                const line1 = words.slice(0, mid).join(' ');
-                const line2 = words.slice(mid).join(' ');
-                previewEl.innerHTML = `<div class="opacity-40 text-[0.8em] mb-1 uppercase">${line1}</div><div class="text-underline uppercase">${line2}</div>`;
-            } else {
-                previewEl.innerHTML = `<div class="text-underline uppercase">${selectedWords.join(' ')}</div>`;
+            const historyOn = document.getElementById('btn-history-mode')?.dataset.state === 'on';
+            const underlineOn = document.getElementById('btn-underline')?.dataset.state === 'on';
+            const histLines = parseInt(document.getElementById('input-hist-lines')?.value || 1);
+            
+            let activeText = selectedWords.join(' ');
+            if (isAllCaps) activeText = activeText.toUpperCase();
+            
+            let html = '';
+            if (historyOn) {
+                for (let i = 0; i < histLines; i++) {
+                    html += `<div style="color:#AAAAAA; font-size: 0.8em; opacity: 0.5; font-weight: 400; margin-bottom: 2px;">HISTORY_LINE_${i+1}</div>`;
+                }
             }
+            
+            const activeStyle = underlineOn ? 'text-decoration: underline;' : '';
+            html += `<div style="${activeStyle}">${activeText}</div>`;
+            
+            previewEl.innerHTML = html;
             previewEl.style.color = textColor;
             previewEl.style.fontWeight = '900';
             previewEl.style.fontFamily = "'Montserrat', sans-serif";
@@ -1183,7 +1244,11 @@
                 text_shadow_blur: shBlurVal,
                 text_stroke: Number(document.getElementById('input-stroke')?.value || 0),
                 shadow_color: document.getElementById('input-shadow-color') ? String(document.getElementById('input-shadow-color').value.replace('#', '')) : null,
-                mask_intensity: document.getElementById('val-mask') ? String(document.getElementById('val-mask').innerText.toLowerCase()) : 'medium'
+                mask_intensity: document.getElementById('val-mask') ? String(document.getElementById('val-mask').innerText.toLowerCase()) : 'medium',
+                // Preset 12 specific
+                scrolling_history: document.getElementById('btn-history-mode')?.dataset.state === 'on',
+                bottom_line_style: document.getElementById('btn-underline')?.dataset.state === 'on',
+                history_lines: Number(document.getElementById('input-hist-lines')?.value || 1)
             }
         };
 
