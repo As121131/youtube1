@@ -198,8 +198,8 @@
             <h1 class="font-headline text-6xl md:text-8xl font-black tracking-tighter leading-none uppercase" id="editor-preset-name">CYBERPUNK_01</h1>
         </div>
         <div class="flex gap-4 mb-2">
-            <button class="px-6 py-2 bg-primary text-on-primary font-bold text-sm tracking-widest hover:glow-primary transition-all" onclick="saveChanges()" data-i18n="save_changes">SAVE_CHANGES</button>
-            <button class="px-6 py-2 border border-outline-variant text-on-surface font-bold text-sm tracking-widest hover:bg-surface-container-highest transition-all" onclick="showView('presets')" data-i18n="back">BACK</button>
+            <button id="main-save-btn" class="px-6 py-2 bg-primary text-on-primary font-bold text-sm tracking-widest hover:glow-primary transition-all uppercase" onclick="saveChanges(event)" data-i18n="save_changes">SAVE_CHANGES</button>
+            <button class="px-6 py-2 border border-outline-variant text-on-surface font-bold text-sm tracking-widest hover:bg-surface-container-highest transition-all uppercase" onclick="showView('presets')" data-i18n="back">BACK</button>
         </div>
     </div>
 
@@ -462,11 +462,9 @@
     }
 
     function showView(viewId, btn = null) {
-        if (viewId === 'editor') {
-             tg.MainButton.show();
-        } else {
-             tg.MainButton.hide();
-        }
+        // We hide MainButton everywhere to prioritize the in-app button as requested
+        tg.MainButton.hide();
+        
         document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
         document.getElementById(`view-${viewId}`).classList.add('active');
 
@@ -691,7 +689,6 @@
 
         controls.innerHTML = html;
         showView('editor');
-        tg.MainButton.show();
         setTimeout(updateLivePreview, 100); // Initial position
     }
 
@@ -1058,7 +1055,9 @@
     }
 
     function saveChanges(event) {
-        const btn = event instanceof Event ? event.currentTarget : null;
+        // Find the button (either from event or by ID)
+        let btn = (event && event.currentTarget) ? event.currentTarget : document.getElementById('main-save-btn');
+        
         if (btn) {
             btn.innerText = currentLang === 'RU' ? "СОХРАНЕНИЕ..." : "SAVING...";
             btn.classList.add('animate-pulse');
