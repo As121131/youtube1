@@ -1037,6 +1037,7 @@
         }
         
         tg.HapticFeedback.notificationOccurred('success');
+        const isPreset13 = activePresetId === '13';
         
         const shadowBtn = document.getElementById('btn-shadow');
         const isShadowOn = shadowBtn && shadowBtn.dataset.state === 'on';
@@ -1066,13 +1067,21 @@
             }
         };
 
-        console.log("Saving settings:", settings);
-        tg.sendData(JSON.stringify(settings));
+        console.log("Saving settings to Bot:", settings);
         
-        // Закрываем через небольшую паузу для плавности
-        setTimeout(() => {
-            tg.close();
-        }, 150);
+        try {
+            tg.sendData(JSON.stringify(settings));
+            // Закрываем через небольшую паузу для плавности
+            setTimeout(() => {
+                tg.close();
+            }, 100);
+        } catch (e) {
+            alert("Error sending data: " + e.message);
+            if (btn) {
+                btn.innerText = "ERROR";
+                btn.disabled = false;
+            }
+        }
     }
 
     let currentLang = 'EN';
