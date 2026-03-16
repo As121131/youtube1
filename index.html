@@ -123,6 +123,22 @@
             background-size: 30px 30px;
             background-position: 0 0, 15px 15px;
         }
+        .mosaic-vibrant-bg {
+            background: #1a1a1a;
+            background-image: 
+                linear-gradient(45deg, #ff008033 25%, transparent 25%, transparent 75%, #ff008033 75%, #ff008033), 
+                linear-gradient(45deg, #0070f333 25%, transparent 25%, transparent 75%, #0070f333 75%, #0070f333);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            position: relative;
+        }
+        .mosaic-vibrant-bg::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to right, #ff008022, #7928ca22, #0070f322);
+            pointer-events: none;
+        }
     </style>
 </head>
 <body class="bg-surface text-on-surface font-body neon-grid min-h-screen">
@@ -220,6 +236,9 @@
                 <button onclick="setPreviewBackground('white')" class="w-5 h-5 border border-black/10 bg-white rounded-full hover:border-primary transition-all" title="White Background"></button>
                 <button onclick="setPreviewBackground('mosaic')" class="w-5 h-5 border border-white/20 bg-gray-400 rounded-full hover:border-primary transition-all overflow-hidden relative" title="Mosaic Background">
                     <div class="absolute inset-0 mosaic-bg opacity-50 scale-150"></div>
+                </button>
+                <button onclick="setPreviewBackground('vibrant')" class="w-5 h-5 border border-white/20 bg-primary/40 rounded-full hover:border-primary transition-all overflow-hidden relative" title="Vibrant Mosaic">
+                    <div class="absolute inset-0 mosaic-vibrant-bg scale-150"></div>
                 </button>
                 <button onclick="setPreviewBackground('colorful')" class="w-5 h-5 border border-white/20 bg-gradient-to-tr from-[#ff0080] via-[#7928ca] to-[#0070f3] rounded-full hover:border-primary transition-all" title="Colorful Background"></button>
             </div>
@@ -538,13 +557,13 @@
                     <span class="text-xs font-bold" data-i18n="punct">${I18N[lang].punct}</span>
                     <div class="flex gap-2">
                         <button id="btn-punct" class="px-3 py-1 border border-primary text-[10px] font-black text-primary hover:bg-primary/10 transition-all uppercase" data-state="${initPunct ? 'on' : 'off'}" data-i18n="btn_commas" onclick="toggleButton(this); updatePreviewText()">${I18N[lang].btn_commas}</button>
-                        <button id="btn-all-caps" class="px-3 py-1 border border-primary text-[10px] font-black text-primary hover:bg-primary/10 transition-all uppercase" data-state="${initCaps ? 'on' : 'off'}" data-i18n="btn_caps" onclick="toggleButton(this); updatePreviewText()">${I18N[lang].btn_caps}</button>
+                        <button id="btn-caps-first" class="px-3 py-1 border border-primary text-[10px] font-black text-primary hover:bg-primary/10 transition-all uppercase" data-state="${initCapsFirst ? 'on' : 'off'}" data-i18n="btn_caps" onclick="toggleButton(this); updatePreviewText()">${I18N[lang].btn_caps}</button>
                     </div>
                 </div>
 
                 <div class="pt-4 border-t border-outline-variant/10 flex items-center justify-between">
                     <span class="text-xs font-bold" data-i18n="caps">${I18N[lang].caps}</span>
-                    <button id="btn-caps-first" class="px-4 py-1 border border-primary text-[10px] font-black text-primary hover:bg-primary/10 transition-all uppercase" data-state="${initCapsFirst ? 'on' : 'off'}" onclick="toggleButton(this); updatePreviewText()">OFF</button>
+                    <button id="btn-all-caps" class="px-4 py-1 border border-primary text-[10px] font-black text-primary hover:bg-primary/10 transition-all uppercase" data-state="${initCaps ? 'on' : 'off'}" onclick="toggleButton(this); updatePreviewText()">OFF</button>
                 </div>
 
                 <div class="pt-4 border-t border-outline-variant/10 flex items-center justify-between">
@@ -648,7 +667,7 @@
         // Reset
         container.style.backgroundColor = '';
         container.style.backgroundImage = '';
-        container.classList.remove('mosaic-bg');
+        container.classList.remove('mosaic-bg', 'mosaic-vibrant-bg');
         container.style.animation = '';
         
         if (color === 'black') {
@@ -660,6 +679,10 @@
         } else if (color === 'mosaic') {
             container.style.backgroundColor = ''; 
             container.classList.add('mosaic-bg');
+            container.style.backgroundImage = '';
+        } else if (color === 'vibrant') {
+            container.style.backgroundColor = ''; 
+            container.classList.add('mosaic-vibrant-bg');
             container.style.backgroundImage = '';
         } else if (color === 'colorful') {
             container.style.backgroundColor = 'transparent';
