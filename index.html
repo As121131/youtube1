@@ -292,12 +292,35 @@
     </button>
 </nav>
 
+<!-- Error Overlay for Sync -->
+<div id="sync-warning" class="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-8 hidden">
+    <div class="bg-surface p-8 border border-error/50 max-w-sm text-center space-y-4">
+        <span class="material-symbols-outlined text-error text-5xl">warning</span>
+        <h3 class="font-headline font-black text-xl text-error uppercase">Sync Warning</h3>
+        <p class="text-xs text-on-surface-variant leading-relaxed">
+            Telegram blocks saving from <b>Inline buttons</b>. To save settings, please open this app using the 
+            <b>"🎨 Визуальный редактор (СИНХРОНИЗАЦИЯ)"</b> button in the bottom menu of the bot.
+        </p>
+        <button onclick="document.getElementById('sync-warning').classList.add('hidden')" class="w-full py-3 bg-surface-container border border-outline-variant text-[10px] font-black uppercase tracking-widest">I Understood</button>
+    </div>
+</div>
+
 <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
     tg.setHeaderColor('#131315');
-    // Hide standard blue button - we use our own design
-    tg.MainButton.hide();
+    
+    // Check if opened via Keyboard button for sync capability
+    const isReplyMenu = tg.initDataUnsafe?.receiver === undefined && tg.initDataUnsafe?.chat === undefined;
+    // In many cases, if opened via Inline button, sendData will simply fail or be missing.
+    
+    tg.MainButton.setParams({
+        text: 'SAVE SETTINGS',
+        color: '#ecb2ff',
+        text_color: '#320047',
+        is_visible: false
+    });
+    tg.MainButton.onClick(() => saveChanges());
 
     const PRESETS = [
         { id: '1', name: 'PRESET_01', cat: 'ITALIC', color: '#ffffff', css: 'font-style:italic; font-weight:800;', desc: 'White italic text, clean style.' },
@@ -439,6 +462,11 @@
     }
 
     function showView(viewId, btn = null) {
+        if (viewId === 'editor') {
+             tg.MainButton.show();
+        } else {
+             tg.MainButton.hide();
+        }
         document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
         document.getElementById(`view-${viewId}`).classList.add('active');
 
@@ -663,6 +691,7 @@
 
         controls.innerHTML = html;
         showView('editor');
+        tg.MainButton.show();
         setTimeout(updateLivePreview, 100); // Initial position
     }
 
@@ -1029,21 +1058,23 @@
     }
 
     function saveChanges(event) {
-        const btn = event instanceof Event ? event.currentTarget : document.querySelector('[onclick="saveChanges()"]');
+        const btn = event instanceof Event ? event.currentTarget : null;
         if (btn) {
             btn.innerText = currentLang === 'RU' ? "СОХРАНЕНИЕ..." : "SAVING...";
             btn.classList.add('animate-pulse');
             btn.disabled = true;
         }
         
+        tg.MainButton.showProgress();
         tg.HapticFeedback.notificationOccurred('success');
-        const isPreset13 = activePresetId === '13';
         
+        const isPreset13 = activePresetId === '13';
         const shadowBtn = document.getElementById('btn-shadow');
         const isShadowOn = shadowBtn && shadowBtn.dataset.state === 'on';
         const shIntensity = isShadowOn ? Number(document.getElementById('input-sh-intensity')?.value || 5) : 0;
         const shBlurVal = isShadowOn ? Number(document.getElementById('input-sh-blur')?.value || 5) : 5;
 
+        // Collect parameters with safe-checks
         const settings = {
             preset: String(activePresetId), 
             action: 'save',
@@ -1067,19 +1098,32 @@
             }
         };
 
-        console.log("Saving settings to Bot:", settings);
-        
+        console.log("Attempting to save settings:", settings);
+
+        // Standard close fallback if something hangs
+        const closeTimeout = setTimeout(() => {
+            tg.close();
+        }, 2000);
+
         try {
-            tg.sendData(JSON.stringify(settings));
-            // Закрываем через небольшую паузу для плавности
-            setTimeout(() => {
-                tg.close();
-            }, 100);
+            // Check if we are in environment where sendData works
+            // In Inline Button apps, sendData is often silent or unavailable
+            if (tg.sendData) {
+                tg.sendData(JSON.stringify(settings));
+                // Usually closes automatically after sendData
+                setTimeout(() => tg.close(), 100);
+            } else {
+                throw new Error("sendData not available");
+            }
         } catch (e) {
-            alert("Error sending data: " + e.message);
+            console.error("Sync error:", e);
+            document.getElementById('sync-warning').classList.remove('hidden');
+            tg.MainButton.hideProgress();
+            clearTimeout(closeTimeout);
             if (btn) {
                 btn.innerText = "ERROR";
                 btn.disabled = false;
+                btn.classList.remove('animate-pulse');
             }
         }
     }
