@@ -256,9 +256,12 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
     tg.setHeaderColor('#131315');
-    // Hide standard blue button - we use our own design
     tg.MainButton.hide();
-    tg.MainButton.setText(""); // Reset standard text
+    tg.MainButton.setText(""); 
+
+    let currentLang = 'EN';
+    let currentPreset = null;
+    let activePresetId = '1';
 
     const PRESETS = [
         { id: '1', name: 'PRESET_01', cat: 'ITALIC', color: '#ffffff', css: 'font-style:italic; font-weight:800;', desc: 'White italic text, clean style.' },
@@ -366,7 +369,7 @@
         });
     }
 
-    let currentPreset = PRESETS[0];
+    currentPreset = PRESETS[0];
 
     function renderPresets() {
         const grid = document.getElementById('presets-grid');
@@ -424,7 +427,6 @@
         tg.HapticFeedback.impactOccurred('light');
     }
 
-    let activePresetId = '1';
 
     function openEditor(p) {
         activePresetId = String(p.id);
@@ -860,17 +862,18 @@
         const boxStyle = `background:${boxColor}; color:${textColor}; padding:4px 8px; border-radius:4px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${finalShadowStyle}`;
         const emptyBoxStyle = `background:transparent; color:${textColor}; padding:4px 8px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${finalShadowStyle}`;
         
-        if (isPreset13) {
+        if (activePresetId === '13') {
             const op = ({ 'weak': 0.3, 'medium': 0.6, 'strong': 1.0 })[maskInt] || 0.6;
             previewEl.style.mixBlendMode = 'difference';
-            // Use selected mask color with opacity
             previewEl.style.color = `rgba(${rgbMain.r}, ${rgbMain.g}, ${rgbMain.b}, ${op})`;
             previewEl.style.lineHeight = '0.75';
             previewEl.style.letterSpacing = '-0.05em';
             previewEl.style.fontWeight = '900';
-            
-            // Standard multi-line layout logic will apply below
-        } else if (previewLinesCount === 1 || previewWordsCount === 1) {
+            previewEl.style.textShadow = 'none';
+        }
+
+        // Logic for text rendering (Setting innerHTML)
+        if (previewLinesCount === 1 || previewWordsCount === 1) {
             if (isPreset8) {
                 const first = selectedWords[0];
                 const rest = selectedWords.slice(1).join(' ');
@@ -1001,9 +1004,6 @@
         }, 150);
     }
 
-    currentLang = 'EN';
-    currentPreset = PRESETS[0];
-    activePresetId = '1';
 
     // Toggle language
     const langToggle = document.getElementById('lang-toggle');
