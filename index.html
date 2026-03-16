@@ -141,13 +141,15 @@
         }
         .stripes-bg {
             background: linear-gradient(to right, 
-                #FF0000 0% 16.6%, 
-                #FF8000 16.6% 33.3%, 
-                #FFFF00 33.3% 50%, 
-                #00FF00 50% 66.6%, 
-                #0000FF 66.6% 83.3%, 
-                #8000FF 83.3% 100%
+                #ff0000 0%, #ff7f00 12.5%, #ffff00 25%, #7fff00 37.5%, 
+                #00ff00 50%, #00ff7f 62.5%, #00ffff 75%, #007fff 87.5%, #0000ff 100%
             );
+            background-size: 200% 100%;
+            animation: moveStripes 10s linear infinite;
+        }
+        @keyframes moveStripes {
+            from { background-position: 0% 50%; }
+            to { background-position: 100% 50%; }
         }
         .photo-bg {
             background-image: url('file:///C:/Users/zudev/.gemini/antigravity/brain/109cffa9-9a1d-4319-a6f1-7d819dbb2f4e/preview_background_photo_1773625534320.png');
@@ -697,6 +699,14 @@
 
         controls.innerHTML = html;
         showView('editor');
+        
+        // Автоматически включаем яркий фон для 13 пресета, чтобы увидеть маску
+        if (p.id === '13') {
+            setPreviewBackground('stripes');
+        } else {
+            setPreviewBackground('default');
+        }
+        
         setTimeout(updateLivePreview, 100); // Initial position
     }
 
@@ -930,9 +940,14 @@
             textShadows.push(`0 0 ${blur * 2.5}px rgba(${rgbColor.r},${rgbColor.g},${rgbColor.b},${(opacity * 0.5).toFixed(2)})`);
         }
         
+        const wrapperEl = document.getElementById('preview-text-wrapper');
+        if (wrapperEl) {
+            wrapperEl.style.mixBlendMode = isPreset13 ? 'difference' : 'normal';
+        }
+
         // Очищаем фильтры и режимы наложения перед расчётом
         previewEl.style.filter = 'none';
-        previewEl.style.mixBlendMode = 'normal';
+        previewEl.style.mixBlendMode = 'normal'; // Мы перенесли это на wrapperEl для 13 пресета
         previewEl.style.backgroundColor = 'transparent';
         previewEl.style.lineHeight = '1.2'; // Reset
         previewEl.style.letterSpacing = 'normal'; // Reset
