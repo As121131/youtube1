@@ -111,6 +111,11 @@
         .view-section.active {
             display: block;
         }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
     </style>
 </head>
 <body class="bg-surface text-on-surface font-body neon-grid min-h-screen">
@@ -206,7 +211,7 @@
                 </button>
                 <button onclick="setPreviewBackground('black')" class="w-5 h-5 border border-white/10 bg-black rounded-full hover:border-primary transition-all" title="Black Background"></button>
                 <button onclick="setPreviewBackground('white')" class="w-5 h-5 border border-black/10 bg-white rounded-full hover:border-primary transition-all" title="White Background"></button>
-                <button id="bg-btn-colorful" onclick="setPreviewBackground('colorful')" class="w-5 h-5 border border-outline-variant/30 rounded-full hover:border-primary transition-all bg-cover bg-center bg-no-repeat" style="background-image: url('C:/Users/zudev/.gemini/antigravity/brain/109cffa9-9a1d-4319-a6f1-7d819dbb2f4e/preview_colorful_bg_1773617286105.png');" title="Colorful Background"></button>
+                <button onclick="setPreviewBackground('colorful')" class="w-5 h-5 border border-white/20 bg-gradient-to-tr from-[#ff0080] via-[#7928ca] to-[#0070f3] rounded-full hover:border-primary transition-all" title="Colorful Background"></button>
             </div>
         </div>
     </section>
@@ -256,12 +261,8 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
     tg.setHeaderColor('#131315');
+    // Hide standard blue button - we use our own design
     tg.MainButton.hide();
-    tg.MainButton.setText(""); 
-
-    let currentLang = 'EN';
-    let currentPreset = null;
-    let activePresetId = '1';
 
     const PRESETS = [
         { id: '1', name: 'PRESET_01', cat: 'ITALIC', color: '#ffffff', css: 'font-style:italic; font-weight:800;', desc: 'White italic text, clean style.' },
@@ -369,7 +370,7 @@
         });
     }
 
-    currentPreset = PRESETS[0];
+    let currentPreset = PRESETS[0];
 
     function renderPresets() {
         const grid = document.getElementById('presets-grid');
@@ -427,6 +428,7 @@
         tg.HapticFeedback.impactOccurred('light');
     }
 
+    let activePresetId = '1';
 
     function openEditor(p) {
         activePresetId = String(p.id);
@@ -462,7 +464,7 @@
         const initPunct = urlParams.get('punc') === 'true';
         const initCaps = urlParams.get('caps') === 'true';
         const initCapsFirst = urlParams.get('cf') === 'true';
-        const initSize = urlParams.get('s') || '0'; // 0=small, 1=medium, 2=large, 3=max
+        const initSize = urlParams.get('s') || '0'; // Default to SMALL (0)
         const initStroke = urlParams.get('st') !== null && urlParams.get('st') !== '' ? urlParams.get('st') : '2';
         const initShadow = urlParams.get('sh') !== null && urlParams.get('sh') !== '' ? urlParams.get('sh') : '3';
         const initShadowBlur = urlParams.get('shb') !== null && urlParams.get('shb') !== '' ? urlParams.get('shb') : '5';
@@ -536,8 +538,8 @@
                 </div>
 
                 <div class="pt-4 border-t border-outline-variant/10 flex items-center justify-between">
-                    <span class="text-xs font-bold" id="label-text-color" data-i18n="color_text">${activePresetId === '13' ? (currentLang === 'RU' ? 'Цвет маски' : 'Mask Color') : I18N[lang].color_text}</span>
-                    <input type="color" id="input-text-color" value="${initTextColor}" class="w-8 h-8 border-none bg-transparent cursor-pointer" oninput="updatePreviewText()">
+                    <span class="text-xs font-bold" data-i18n="color_text">${I18N[lang].color_text}</span>
+                    <input type="color" id="input-text-color" value="${initTextColor}" class="w-8 h-8 border-none bg-transparent cursor-pointer" oninput="document.getElementById('preview-text').style.color=this.value; updatePreviewText()">
                 </div>
             </div>
         `;
@@ -615,6 +617,10 @@
                             <input type="range" id="input-mask" min="0" max="2" value="${initMask === 'weak' ? 0 : (initMask === 'strong' ? 2 : 1)}" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
                                 oninput="const v=['WEAK','MEDIUM','STRONG']; document.getElementById('val-mask').innerText=v[this.value]; updatePreviewText()">
                         </div>
+                        <div class="pt-4 border-t border-outline-variant/10 flex items-center justify-between">
+                            <span class="text-xs font-bold" data-i18n="color_text">${I18N[lang].color_text}</span>
+                            <input type="color" id="input-text-color-mask" value="${initTextColor}" class="w-8 h-8 border-none bg-transparent cursor-pointer" oninput="updatePreviewText()">
+                        </div>
                     </div>
                 </div>
              `;
@@ -640,8 +646,10 @@
             container.style.backgroundColor = '#ffffff';
             container.style.backgroundImage = 'none';
         } else if (color === 'colorful') {
-            container.style.backgroundImage = "url('C:/Users/zudev/.gemini/antigravity/brain/109cffa9-9a1d-4319-a6f1-7d819dbb2f4e/preview_colorful_bg_1773617286105.png')";
-            container.style.backgroundSize = "cover";
+            container.style.backgroundColor = 'transparent';
+            container.style.backgroundImage = 'linear-gradient(45deg, #ff0080, #7928ca, #0070f3, #00dfd8)';
+            container.style.backgroundSize = '400% 400%';
+            container.style.animation = 'gradientBG 15s ease infinite';
         }
         
         tg.HapticFeedback.impactOccurred('light');
@@ -713,22 +721,21 @@
         const previewEl = document.getElementById('preview-text');
         if (!previewEl) return;
         
-        const wordsCount = parseInt(document.getElementById('input-words')?.value || 1) || 1;
-        const linesCount = parseInt(document.getElementById('input-lines')?.value || 1) || 1;
-        const isAllCaps = document.getElementById('btn-all-caps')?.dataset?.state === 'on';
-        const isCapsFirst = document.getElementById('btn-caps-first')?.dataset?.state === 'on';
-        const isPunct = document.getElementById('btn-punct')?.dataset?.state === 'on';
-        const sizeVal = parseInt(document.getElementById('input-size')?.value || 1) || 1;
-        
+        const wordsCount = parseInt(document.getElementById('input-words')?.value || 1);
+        const linesCount = parseInt(document.getElementById('input-lines')?.value || 1);
+        const isAllCaps = document.getElementById('btn-all-caps')?.dataset.state === 'on';
+        const isCapsFirst = document.getElementById('btn-caps-first')?.dataset.state === 'on';
+        const isPunct = document.getElementById('btn-punct')?.dataset.state === 'on';
+        const sizeVal = parseInt(document.getElementById('input-size')?.value || 1);
         // Read new shadow parameters
         const shadowBtn = document.getElementById('btn-shadow');
-        const isShadowOn = shadowBtn && shadowBtn.dataset?.state === 'on';
-        const shIntensity = parseInt(document.getElementById('input-sh-intensity')?.value || 5) || 5;
-        const shBlurVal = parseInt(document.getElementById('input-sh-blur')?.value || 5) || 5;
+        const isShadowOn = shadowBtn && shadowBtn.dataset.state === 'on';
+        const shIntensity = parseInt(document.getElementById('input-sh-intensity')?.value || 5);
+        const shBlurVal = parseInt(document.getElementById('input-sh-blur')?.value || 5);
         
-        const textStroke = parseInt(document.getElementById('input-stroke')?.value || 0) || 0;
-        const isPreset8 = activePresetId === '8';
+        const textStroke = parseInt(document.getElementById('input-stroke')?.value || 0);
         const isPreset13 = activePresetId === '13';
+        const isPreset8 = activePresetId === '8';
         
         // Apply text scaling based on size slider (0=small, 1=medium, 2=large, 3=max)
         const scaleMap = { 0: 0.75, 1: 1.0, 2: 1.25, 3: 1.6 };
@@ -757,7 +764,9 @@
         let previewLinesCount = linesCount === 0 ? 1 : linesCount;
 
         if (isPreset13) {
-            // Preset 13 allows slider control now
+            // Respect sliders for 13 too, but with 2/2 as default if AUTO
+            if (wordsCount === 0) previewWordsCount = 2;
+            if (linesCount === 0) previewLinesCount = 2;
         }
         
         let selectedWords = processedWords.slice(0, previewWordsCount);
@@ -765,9 +774,9 @@
             selectedWords[0] = selectedWords[0] + ",";
         }
         
-        const textColor = document.getElementById('input-text-color')?.value || '#ffffff';
+        const textColor = isPreset13 ? (document.getElementById('input-text-color-mask')?.value || '#ffffff') : (document.getElementById('input-text-color')?.value || '#ffffff');
         const boxColor = document.getElementById('input-box-color')?.value || '#000000';
-        const maskInt = (document.getElementById('val-mask')?.innerText || 'MEDIUM').toLowerCase();
+        const maskInt = document.getElementById('val-mask')?.innerText.toLowerCase() || 'medium';
         
         // Чтение цвета тени/обводки, если элемент есть, иначе #000
         const shColorVal = document.getElementById('input-shadow-color')?.value || '#000000';
@@ -782,9 +791,8 @@
                 r: parseInt(result[1], 16),
                 g: parseInt(result[2], 16),
                 b: parseInt(result[3], 16)
-            } : { r: 255, g: 255, b: 255 };
+            } : { r: 0, g: 0, b: 0 };
         }
-        const rgbMain = hexToRgb(textColor);
         const rgbColor = hexToRgb(shColorVal);
         
         if (textStroke > 0) {
@@ -862,18 +870,31 @@
         const boxStyle = `background:${boxColor}; color:${textColor}; padding:4px 8px; border-radius:4px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${finalShadowStyle}`;
         const emptyBoxStyle = `background:transparent; color:${textColor}; padding:4px 8px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${finalShadowStyle}`;
         
-        if (activePresetId === '13') {
-            const op = ({ 'weak': 0.3, 'medium': 0.6, 'strong': 1.0 })[maskInt] || 0.6;
+        if (isPreset13) {
+            const intensityMap = { 'weak': 0.3, 'medium': 0.6, 'strong': 1.0 };
+            const op = intensityMap[maskInt] || 0.6;
             previewEl.style.mixBlendMode = 'difference';
-            previewEl.style.color = `rgba(${rgbMain.r}, ${rgbMain.g}, ${rgbMain.b}, ${op})`;
+            
+            // Inversion logic: if text color is white, it inverts normally. 
+            // We use the selected text color as the "mask" base.
+            const rgb = hexToRgb(textColor);
+            previewEl.style.color = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${op})`;
             previewEl.style.lineHeight = '0.75';
             previewEl.style.letterSpacing = '-0.05em';
             previewEl.style.fontWeight = '900';
-            previewEl.style.textShadow = 'none';
-        }
-
-        // Logic for text rendering (Setting innerHTML)
-        if (previewLinesCount === 1 || previewWordsCount === 1) {
+            
+            // Split based on lines count
+            if (previewLinesCount === 1) {
+                previewEl.innerHTML = selectedWords.join(' ');
+            } else {
+                const perLine = Math.ceil(selectedWords.length / previewLinesCount);
+                let linesArr = [];
+                for (let i = 0; i < selectedWords.length; i += perLine) {
+                    linesArr.push(selectedWords.slice(i, i + perLine).join(' '));
+                }
+                previewEl.innerHTML = linesArr.join('<br>');
+            }
+        } else if (previewLinesCount === 1 || previewWordsCount === 1) {
             if (isPreset8) {
                 const first = selectedWords[0];
                 const rest = selectedWords.slice(1).join(' ');
@@ -984,7 +1005,7 @@
                 punctuation: document.getElementById('btn-punct')?.dataset.state === 'on',
                 uppercase: document.getElementById('btn-all-caps')?.dataset.state === 'on',
                 capitalize_first: document.getElementById('btn-caps-first')?.dataset.state === 'on',
-                text_color: String(document.getElementById('input-text-color')?.value || '#ffffff'),
+                text_color: String((isPreset13 ? document.getElementById('input-text-color-mask') : document.getElementById('input-text-color'))?.value || '#ffffff'),
                 box_color: document.getElementById('input-box-color') ? String(document.getElementById('input-box-color').value) : null,
                 animation_type: document.getElementById('val-anim') ? String(document.getElementById('val-anim').innerText.toLowerCase()) : 'default',
                 text_shadow: shIntensity,
@@ -1004,18 +1025,13 @@
         }, 150);
     }
 
+    let currentLang = 'EN';
+    document.getElementById('lang-toggle').onclick = () => {
+        currentLang = currentLang === 'EN' ? 'RU' : 'EN';
+        updateLanguage();
+        tg.HapticFeedback.impactOccurred('light');
+    };
 
-    // Toggle language
-    const langToggle = document.getElementById('lang-toggle');
-    if (langToggle) {
-        langToggle.onclick = () => {
-            currentLang = currentLang === 'EN' ? 'RU' : 'EN';
-            updateLanguage();
-            tg.HapticFeedback.impactOccurred('light');
-        };
-    }
-
-    // Initialize app
     updateLanguage();
     renderPresets();
 
