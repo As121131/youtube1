@@ -154,6 +154,26 @@
             background-position: center;
             background-repeat: no-repeat;
         }
+        .text-underline {
+            text-decoration: underline;
+            text-decoration-thickness: 2px;
+            text-underline-offset: 4px;
+        }
+        .text-underline {
+            text-decoration: underline;
+            text-decoration-thickness: 2px;
+            text-underline-offset: 4px;
+        }
+        .text-underline {
+            text-decoration: underline;
+            text-decoration-thickness: 2px;
+            text-underline-offset: 4px;
+        }
+        .text-underline {
+            text-decoration: underline;
+            text-decoration-thickness: 2px;
+            text-underline-offset: 4px;
+        }
         .photo-bg {
             background-image: url('file:///C:/Users/zudev/.gemini/antigravity/brain/109cffa9-9a1d-4319-a6f1-7d819dbb2f4e/preview_background_photo_1773625534320.png');
             background-size: cover;
@@ -347,7 +367,7 @@
         { id: '9', name: 'PRESET_09', cat: 'CYBER', color: '#ffffff', css: 'background:#50C8F0; color:#fff; padding:6px; font-weight:700; text-shadow: 0 0 5px #fff;', desc: 'Light blue cyber glow.' },
         { id: '10', name: 'PRESET_10', cat: 'NEON', color: '#39FF14', css: 'font-weight:900; text-shadow: 0 0 20px #39FF14;', desc: 'Toxic green neon glow.' },
         { id: '11', name: 'PRESET_11', cat: 'KARAOKE', color: '#ffffff', css: 'font-weight:800; text-shadow: 2px 2px #0000FF66;', desc: 'Green karaoke highlight.' },
-        { id: '12', name: 'PRESET_12', cat: 'HISTORY', color: '#ffffff', css: 'border-bottom: 2px solid #fff; font-weight:800;', desc: 'Two lines history effect.' },
+        { id: '12', name: 'PRESET_12', cat: 'HISTORY', icon: '📜', color: '#ffffff', css: 'border-bottom: 2px solid #fff; font-weight:800;', desc: 'Two lines history effect.' },
         { id: '13', name: 'PRESET_13', cat: 'GLASS', color: '#ffffff', css: 'font-weight:900; font-family: Montserrat, sans-serif;', desc: 'Glass inversion effect.' },
         { id: '14', name: 'PRESET_14', cat: 'PREMIUM', color: '#ffffff', css: 'font-weight:900; text-shadow: 0 0 10px rgba(255,255,255,0.3);', desc: 'Premium Montserrat style.' }
     ];
@@ -530,22 +550,22 @@
         const lang = currentLang;
         
         // Initial values from URL or defaults
-        const urlParams = new URLSearchParams(window.location.search);
-        const initX = urlParams.get('x') || '50';
-        const initY = urlParams.get('y') || '70';
-        const initWords = urlParams.get('w') || '1';
-        const initLines = urlParams.get('l') || '1';
-        const initPunct = urlParams.get('punc') === 'true';
-        const initCaps = urlParams.get('caps') === 'true';
-        const initCapsFirst = urlParams.get('cf') === 'true';
-        const initSize = urlParams.get('s') || '0'; // Default to SMALL (0)
-        const initStroke = urlParams.get('st') !== null && urlParams.get('st') !== '' ? urlParams.get('st') : '2';
-        const initShadow = urlParams.get('sh') !== null && urlParams.get('sh') !== '' ? urlParams.get('sh') : '3';
-        const initShadowBlur = urlParams.get('shb') !== null && urlParams.get('shb') !== '' ? urlParams.get('shb') : '5';
-        const initShadowColor = urlParams.get('shc') ? '#' + urlParams.get('shc') : '#000000';
-        const initTextColor = urlParams.get('tc') ? '#' + urlParams.get('tc') : p.color;
-        const initBoxColor = urlParams.get('bc') ? '#' + urlParams.get('bc') : '#000000';
-        const initMask = urlParams.get('m') || 'medium';
+        const currentUrlParams = new URLSearchParams(window.location.search);
+        const initX = currentUrlParams.get('x') || '50';
+        const initY = currentUrlParams.get('y') || '70';
+        const initWords = currentUrlParams.get('w') || '1';
+        const initLines = currentUrlParams.get('l') || '1';
+        const initPunct = currentUrlParams.get('punc') === 'true';
+        const initCaps = currentUrlParams.get('caps') === 'true';
+        const initCapsFirst = currentUrlParams.get('cf') === 'true';
+        const initSize = currentUrlParams.get('s') || '0'; // Default to SMALL (0)
+        const initStroke = currentUrlParams.get('st') !== null && currentUrlParams.get('st') !== '' ? currentUrlParams.get('st') : '2';
+        const initShadow = currentUrlParams.get('sh') !== null && currentUrlParams.get('sh') !== '' ? currentUrlParams.get('sh') : '3';
+        const initShadowBlur = currentUrlParams.get('shb') !== null && currentUrlParams.get('shb') !== '' ? currentUrlParams.get('shb') : '5';
+        const initShadowColor = currentUrlParams.get('shc') ? '#' + currentUrlParams.get('shc') : '#000000';
+        const initTextColor = currentUrlParams.get('tc') ? '#' + currentUrlParams.get('tc') : p.color;
+        const initBoxColor = currentUrlParams.get('bc') ? '#' + currentUrlParams.get('bc') : '#000000';
+        const initMask = currentUrlParams.get('m') || 'medium';
 
         // General Settings HTML
         let html = `
@@ -672,6 +692,26 @@
                             </div>
                             <input type="range" id="input-anim" min="0" max="2" value="0" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
                                 oninput="const v=['DEFAULT','STATIC','FADE']; document.getElementById('val-anim').innerText=v[this.value]">
+                        </div>
+                    </div>
+                </div>
+             `;
+        if (p.id === '12' || p.id === '14') {
+             html += `
+                <div class="space-y-6 bg-surface-container-low p-6 border border-outline-variant/20">
+                    <p class="text-[10px] font-black tracking-[0.3em] text-primary uppercase mb-4">PRESET_OPTIONS</p>
+                    <div class="flex flex-col gap-4">
+                        <div class="flex justify-between items-center bg-outline-variant/5 p-2 rounded-sm border border-outline-variant/10">
+                            <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="color_shadow_stroke">${I18N[lang].color_shadow_stroke}</span>
+                            <input type="color" id="input-shadow-color" value="${initShadowColor}" class="w-6 h-6 border-none bg-transparent cursor-pointer" oninput="updatePreviewText()">
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="text_stroke">${I18N[lang].text_stroke}</span>
+                                <span class="text-[10px] font-black text-primary uppercase" id="val-stroke">${initStroke}</span>
+                            </div>
+                            <input type="range" id="input-stroke" min="0" max="10" value="${initStroke}" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
+                                oninput="document.getElementById('val-stroke').innerText=this.value; updatePreviewText()">
                         </div>
                     </div>
                 </div>
@@ -962,7 +1002,25 @@
         const boxStyle = `background:${boxColor}; color:${textColor}; padding:4px 8px; border-radius:4px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${finalShadowStyle}`;
         const emptyBoxStyle = `background:transparent; color:${textColor}; padding:4px 8px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${finalShadowStyle}`;
         
-        if (isPreset13) {
+        const isP12 = activePresetId === '12';
+        const isP13 = activePresetId === '13';
+        
+        if (isP12) {
+            // Для 12 пресета показываем две строки (история)
+            const words = selectedWords;
+            if (words.length > 1) {
+                const mid = Math.ceil(words.length / 2);
+                const line1 = words.slice(0, mid).join(' ');
+                const line2 = words.slice(mid).join(' ');
+                previewEl.innerHTML = `<div class="opacity-40 text-[0.8em] mb-1 uppercase">${line1}</div><div class="text-underline uppercase">${line2}</div>`;
+            } else {
+                previewEl.innerHTML = `<div class="text-underline uppercase">${selectedWords.join(' ')}</div>`;
+            }
+            previewEl.style.color = textColor;
+            previewEl.style.fontWeight = '900';
+            previewEl.style.fontFamily = "'Montserrat', sans-serif";
+            previewEl.style.textShadow = textShadows.join(', ');
+        } else if (isP13) {
             const intensityMap = { 'weak': 0.3, 'medium': 0.6, 'strong': 1.0 };
             const op = intensityMap[maskInt] || 0.6;
             
