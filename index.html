@@ -154,26 +154,6 @@
             background-position: center;
             background-repeat: no-repeat;
         }
-        .text-underline {
-            text-decoration: underline;
-            text-decoration-thickness: 2px;
-            text-underline-offset: 4px;
-        }
-        .text-underline {
-            text-decoration: underline;
-            text-decoration-thickness: 2px;
-            text-underline-offset: 4px;
-        }
-        .text-underline {
-            text-decoration: underline;
-            text-decoration-thickness: 2px;
-            text-underline-offset: 4px;
-        }
-        .text-underline {
-            text-decoration: underline;
-            text-decoration-thickness: 2px;
-            text-underline-offset: 4px;
-        }
         .photo-bg {
             background-image: url('file:///C:/Users/zudev/.gemini/antigravity/brain/109cffa9-9a1d-4319-a6f1-7d819dbb2f4e/preview_background_photo_1773625534320.png');
             background-size: cover;
@@ -346,11 +326,7 @@
     // Check if opened via Keyboard button for sync capability
     const isReplyMenu = tg.initDataUnsafe?.receiver === undefined && tg.initDataUnsafe?.chat === undefined;
     // In many cases, if opened via Inline button, sendData will simply fail or be missing.
-
-    let currentLang = 'EN';
-    let currentPreset = null;
-    let activePresetId = '1';
-
+    
     tg.MainButton.setParams({
         text: 'SAVE SETTINGS',
         color: '#ecb2ff',
@@ -412,11 +388,7 @@
             static: "STATIC",
             fade: "FADE",
             btn_commas: "COMMAS",
-            btn_caps: "CAPITALIZED",
-            history_mode: "History Mode",
-            history_lines: "History Lines",
-            line_style: "Active Line Style",
-            underline: "Underline"
+            btn_caps: "CAPITALIZED"
         },
         RU: {
             presets_title: "ПРЕСЕТЫ",
@@ -451,11 +423,7 @@
             static: "СТАТИКА",
             fade: "FADE",
             btn_commas: "ЗАПЯТЫЕ",
-            btn_caps: "ЗАГЛАВНЫЕ",
-            history_mode: "Режим истории",
-            history_lines: "Строк истории",
-            line_style: "Стиль активной строки",
-            underline: "Подчеркивание"
+            btn_caps: "ЗАГЛАВНЫЕ"
         }
     };
 
@@ -473,6 +441,8 @@
         });
     }
 
+    let currentPreset = PRESETS[0];
+
     function renderPresets() {
         const grid = document.getElementById('presets-grid');
         grid.innerHTML = '';
@@ -487,15 +457,14 @@
                         <span class="font-label text-[8px] text-on-surface-variant uppercase">Online</span>
                     </div>
                 </div>
-                <div class="flex-1 flex items-center justify-center relative bg-surface-container-low border border-outline-variant/10 group-hover:bg-primary/5 transition-colors">
+                <div class="flex-1 flex items-center justify-center relative bg-surface-container-low border border-outline-variant/10">
                     <p class="text-xl font-black uppercase text-center px-2" style="${p.css} color:${p.color}">${p.name}</p>
-                    <div class="absolute inset-x-0 bottom-0 top-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                         <button class="bg-primary text-on-primary px-4 py-2 font-black text-xs uppercase tracking-widest active:scale-95 transition-transform" onclick="event.stopPropagation(); currentPreset=PRESETS[${i}]; activePresetId=String(PRESETS[${i}].id); saveChanges();">SELECT</button>
-                    </div>
+                    <div class="absolute inset-0 scanline opacity-10 pointer-events-none"></div>
                 </div>
                 <div class="z-10 border-t border-outline-variant/30 pt-4 mt-auto">
                     <p class="font-headline text-lg font-black tracking-tighter uppercase leading-none">${p.name}</p>
                 </div>
+                <div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             `;
             card.onclick = () => {
                 currentPreset = p;
@@ -533,6 +502,7 @@
         tg.HapticFeedback.impactOccurred('light');
     }
 
+    let activePresetId = '1';
 
     function openEditor(p) {
         activePresetId = String(p.id);
@@ -548,7 +518,7 @@
                 css = css.replace(/background:[^;]+;?/, '').replace(/padding:[^;]+;?/, '');
             }
             preview.style.cssText = css;
-            if (activePresetId === '11' || activePresetId === '12' || activePresetId === '13' || activePresetId === '14') {
+            if (activePresetId === '11' || activePresetId === '13' || activePresetId === '14') {
                 preview.style.fontFamily = "'Montserrat', sans-serif";
             } else {
                 preview.style.fontFamily = "";
@@ -560,25 +530,22 @@
         const lang = currentLang;
         
         // Initial values from URL or defaults
-        const currentUrlParams = new URLSearchParams(window.location.search);
-        const initX = currentUrlParams.get('x') || '50';
-        const initY = currentUrlParams.get('y') || '70';
-        const initWords = currentUrlParams.get('w') || '1';
-        const initLines = currentUrlParams.get('l') || '1';
-        const initPunct = currentUrlParams.get('punc') === 'true';
-        const initCaps = currentUrlParams.get('caps') === 'true';
-        const initCapsFirst = currentUrlParams.get('cf') === 'true';
-        const initSize = currentUrlParams.get('s') || '0'; // Default to SMALL (0)
-        const initStroke = currentUrlParams.get('st') !== null && currentUrlParams.get('st') !== '' ? currentUrlParams.get('st') : '2';
-        const initShadow = currentUrlParams.get('sh') !== null && currentUrlParams.get('sh') !== '' ? currentUrlParams.get('sh') : '3';
-        const initShadowBlur = currentUrlParams.get('shb') !== null && currentUrlParams.get('shb') !== '' ? currentUrlParams.get('shb') : '5';
-        const initShadowColor = currentUrlParams.get('shc') ? '#' + currentUrlParams.get('shc') : '#000000';
-        const initTextColor = currentUrlParams.get('tc') ? '#' + currentUrlParams.get('tc') : p.color;
-        const initBoxColor = currentUrlParams.get('bc') ? '#' + currentUrlParams.get('bc') : '#000000';
-        const initMask = currentUrlParams.get('m') || 'medium';
-        const initHistory = currentUrlParams.get('hist') !== 'false'; // Default true
-        const initUnderline = currentUrlParams.get('und') !== 'false'; // Default true
-        const initHistLines = currentUrlParams.get('hl') || '1';
+        const urlParams = new URLSearchParams(window.location.search);
+        const initX = urlParams.get('x') || '50';
+        const initY = urlParams.get('y') || '70';
+        const initWords = urlParams.get('w') || '1';
+        const initLines = urlParams.get('l') || '1';
+        const initPunct = urlParams.get('punc') === 'true';
+        const initCaps = urlParams.get('caps') === 'true';
+        const initCapsFirst = urlParams.get('cf') === 'true';
+        const initSize = urlParams.get('s') || '0'; // Default to SMALL (0)
+        const initStroke = urlParams.get('st') !== null && urlParams.get('st') !== '' ? urlParams.get('st') : '2';
+        const initShadow = urlParams.get('sh') !== null && urlParams.get('sh') !== '' ? urlParams.get('sh') : '3';
+        const initShadowBlur = urlParams.get('shb') !== null && urlParams.get('shb') !== '' ? urlParams.get('shb') : '5';
+        const initShadowColor = urlParams.get('shc') ? '#' + urlParams.get('shc') : '#000000';
+        const initTextColor = urlParams.get('tc') ? '#' + urlParams.get('tc') : p.color;
+        const initBoxColor = urlParams.get('bc') ? '#' + urlParams.get('bc') : '#000000';
+        const initMask = urlParams.get('m') || 'medium';
 
         // General Settings HTML
         let html = `
@@ -709,62 +676,6 @@
                     </div>
                 </div>
              `;
-        if (p.id === '12') {
-             html += `
-                <div class="space-y-6 bg-surface-container-low p-6 border border-outline-variant/20">
-                    <p class="text-[10px] font-black tracking-[0.3em] text-primary uppercase mb-4">HISTORY_CORE</p>
-                    <div class="flex flex-col gap-6">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-bold" data-i18n="history_mode">${I18N[lang].history_mode}</span>
-                            <button id="btn-history-mode" class="px-4 py-1 border border-primary text-[10px] font-black text-primary hover:bg-primary/10 transition-all uppercase" data-state="${initHistory ? 'on' : 'off'}" onclick="toggleButton(this); updatePreviewText()">${initHistory ? I18N[lang].on : I18N[lang].off}</button>
-                        </div>
-                        <div class="space-y-3">
-                            <div class="flex justify-between">
-                                <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="history_lines">${I18N[lang].history_lines}</span>
-                                <span class="text-[10px] font-black text-primary uppercase" id="val-hist-lines">${initHistLines}</span>
-                            </div>
-                            <input type="range" id="input-hist-lines" min="1" max="2" value="${initHistLines}" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
-                                oninput="document.getElementById('val-hist-lines').innerText=this.value; updatePreviewText()">
-                        </div>
-                        <div class="pt-4 border-t border-outline-variant/10 flex items-center justify-between">
-                            <span class="text-xs font-bold" data-i18n="line_style">${I18N[lang].line_style}</span>
-                            <button id="btn-underline" class="px-4 py-1 border border-primary text-[10px] font-black text-primary hover:bg-primary/10 transition-all uppercase" data-state="${initUnderline ? 'on' : 'off'}" data-i18n="underline" onclick="toggleButton(this); updatePreviewText()">${I18N[lang].underline}</button>
-                        </div>
-                        <div class="flex justify-between items-center bg-outline-variant/5 p-2 rounded-sm border border-outline-variant/10">
-                            <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="color_shadow_stroke">${I18N[lang].color_shadow_stroke}</span>
-                            <input type="color" id="input-shadow-color" value="${initShadowColor}" class="w-6 h-6 border-none bg-transparent cursor-pointer" oninput="updatePreviewText()">
-                        </div>
-                        <div class="space-y-3">
-                            <div class="flex justify-between">
-                                <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="text_stroke">${I18N[lang].text_stroke}</span>
-                                <span class="text-[10px] font-black text-primary uppercase" id="val-stroke">${initStroke}</span>
-                            </div>
-                            <input type="range" id="input-stroke" min="0" max="10" value="${initStroke}" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
-                                oninput="document.getElementById('val-stroke').innerText=this.value; updatePreviewText()">
-                        </div>
-                    </div>
-                </div>
-             `;
-        } else if (p.id === '14') {
-             html += `
-                <div class="space-y-6 bg-surface-container-low p-6 border border-outline-variant/20">
-                    <p class="text-[10px] font-black tracking-[0.3em] text-primary uppercase mb-4">PRESET_OPTIONS</p>
-                    <div class="flex flex-col gap-4">
-                        <div class="flex justify-between items-center bg-outline-variant/5 p-2 rounded-sm border border-outline-variant/10">
-                            <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="color_shadow_stroke">${I18N[lang].color_shadow_stroke}</span>
-                            <input type="color" id="input-shadow-color" value="${initShadowColor}" class="w-6 h-6 border-none bg-transparent cursor-pointer" oninput="updatePreviewText()">
-                        </div>
-                        <div class="space-y-3">
-                            <div class="flex justify-between">
-                                <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="text_stroke">${I18N[lang].text_stroke}</span>
-                                <span class="text-[10px] font-black text-primary uppercase" id="val-stroke">${initStroke}</span>
-                            </div>
-                            <input type="range" id="input-stroke" min="0" max="10" value="${initStroke}" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
-                                oninput="document.getElementById('val-stroke').innerText=this.value; updatePreviewText()">
-                        </div>
-                    </div>
-                </div>
-             `;
         }
 
         if (p.id === '13') {
@@ -792,9 +703,9 @@
         controls.innerHTML = html;
         showView('editor');
         
-        // Автоматически включаем яркий фон для 13 пресета
+        // Автоматически включаем яркую мозаику для 13 пресета
         if (p.id === '13') {
-            setPreviewBackground('photo');
+            setPreviewBackground('vibrant');
         } else {
             setPreviewBackground('default');
         }
@@ -809,14 +720,10 @@
         // Reset
         container.style.backgroundColor = '';
         container.style.backgroundImage = '';
-        container.classList.remove('mosaic-bg', 'mosaic-vibrant-bg', 'stripes-bg');
+        container.classList.remove('mosaic-bg', 'mosaic-vibrant-bg', 'stripes-bg', 'photo-bg');
         container.style.animation = '';
         
-        if (color === 'photo') {
-            container.style.backgroundImage = 'url("file:///C:/Users/zudev/.gemini/antigravity/brain/109cffa9-9a1d-4319-a6f1-7d819dbb2f4e/preview_background_photo_1773625534320_1773666422824.png")';
-            container.style.backgroundSize = 'cover';
-            container.style.backgroundPosition = 'center';
-        } else if (color === 'black') {
+        if (color === 'black') {
             container.style.backgroundColor = '#000000';
             container.style.backgroundImage = 'none';
         } else if (color === 'white') {
@@ -917,6 +824,7 @@
         
         const textStroke = parseInt(document.getElementById('input-stroke')?.value || 0);
         const isPreset13 = activePresetId === '13';
+        const isPreset12 = activePresetId === '12';
         const isPreset8 = activePresetId === '8';
         
         // Apply text scaling based on size slider (0=small, 1=medium, 2=large, 3=max)
@@ -1055,34 +963,7 @@
         const boxStyle = `background:${boxColor}; color:${textColor}; padding:4px 8px; border-radius:4px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${finalShadowStyle}`;
         const emptyBoxStyle = `background:transparent; color:${textColor}; padding:4px 8px; margin-right:4px; display:inline-block; line-height:1; vertical-align:baseline; ${finalShadowStyle}`;
         
-        const isP12 = activePresetId === '12';
-        const isP13 = activePresetId === '13';
-        
-        if (isP12) {
-            // Для 12 пресета показываем две строки (история)
-            const historyOn = document.getElementById('btn-history-mode')?.dataset.state === 'on';
-            const underlineOn = document.getElementById('btn-underline')?.dataset.state === 'on';
-            const histLines = parseInt(document.getElementById('input-hist-lines')?.value || 1);
-            
-            let activeText = selectedWords.join(' ');
-            if (isAllCaps) activeText = activeText.toUpperCase();
-            
-            let html = '';
-            if (historyOn) {
-                for (let i = 0; i < histLines; i++) {
-                    html += `<div style="color:#AAAAAA; font-size: 0.8em; opacity: 0.5; font-weight: 400; margin-bottom: 2px;">HISTORY_LINE_${i+1}</div>`;
-                }
-            }
-            
-            const activeStyle = underlineOn ? 'text-decoration: underline;' : '';
-            html += `<div style="${activeStyle}">${activeText}</div>`;
-            
-            previewEl.innerHTML = html;
-            previewEl.style.color = textColor;
-            previewEl.style.fontWeight = '900';
-            previewEl.style.fontFamily = "'Montserrat', sans-serif";
-            previewEl.style.textShadow = textShadows.join(', ');
-        } else if (isP13) {
+        if (isPreset13) {
             const intensityMap = { 'weak': 0.3, 'medium': 0.6, 'strong': 1.0 };
             const op = intensityMap[maskInt] || 0.6;
             
@@ -1156,6 +1037,19 @@
                     previewEl.innerHTML = `${line1Words.join(' ')}<br>${line2Words.join(' ')}<br>${line3Words.join(' ')}`;
                 }
             }
+        } else if (isPreset12) {
+            // Preset 12 Special: History Effect (Previous thin/grey, current bold/white)
+            // We simulate this by showing a 'history' line above the current one
+            const historyLine = selectedWords.length > 2 ? selectedWords.slice(0, Math.ceil(selectedWords.length/2)).join(' ') : "Sample History";
+            const currentLine = selectedWords.length > 2 ? selectedWords.slice(Math.ceil(selectedWords.length/2)).join(' ') : selectedWords.join(' ');
+            
+            previewEl.style.lineHeight = '0.9';
+            previewEl.style.letterSpacing = '-0.02em';
+            
+            previewEl.innerHTML = `
+                <div style="opacity:0.4; font-weight:400; font-size:0.8em; margin-bottom:5px;">${historyLine}</div>
+                <div style="font-weight:900; color:${textColor}; ${finalShadowStyle}">${currentLine}</div>
+            `;
         }
     }
 
@@ -1245,11 +1139,7 @@
                 text_shadow_blur: shBlurVal,
                 text_stroke: Number(document.getElementById('input-stroke')?.value || 0),
                 shadow_color: document.getElementById('input-shadow-color') ? String(document.getElementById('input-shadow-color').value.replace('#', '')) : null,
-                mask_intensity: document.getElementById('val-mask') ? String(document.getElementById('val-mask').innerText.toLowerCase()) : 'medium',
-                // Preset 12 specific
-                scrolling_history: document.getElementById('btn-history-mode')?.dataset.state === 'on',
-                bottom_line_style: document.getElementById('btn-underline')?.dataset.state === 'on',
-                history_lines: Number(document.getElementById('input-hist-lines')?.value || 1)
+                mask_intensity: document.getElementById('val-mask') ? String(document.getElementById('val-mask').innerText.toLowerCase()) : 'medium'
             }
         };
 
@@ -1283,7 +1173,7 @@
         }
     }
 
-
+    let currentLang = 'EN';
     document.getElementById('lang-toggle').onclick = () => {
         currentLang = currentLang === 'EN' ? 'RU' : 'EN';
         updateLanguage();
