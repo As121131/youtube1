@@ -597,7 +597,7 @@
                                 <span class="text-[10px] font-black text-primary uppercase" id="val-anim">DEFAULT</span>
                             </div>
                             <input type="range" id="input-anim" min="0" max="2" value="0" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
-                                oninput="const v=['DEFAULT','STATIC','FADE']; document.getElementById('val-anim').innerText=v[this.value]">
+                                oninput="const v=['DEFAULT','STATIC','FADE']; document.getElementById('val-anim').innerText=v[this.value]; updatePreviewText()">
                         </div>
                     </div>
                 </div>
@@ -646,10 +646,11 @@
             container.style.backgroundColor = '#ffffff';
             container.style.backgroundImage = 'none';
         } else if (color === 'colorful') {
-            container.style.backgroundColor = 'transparent';
-            container.style.backgroundImage = 'linear-gradient(45deg, #ff0080, #7928ca, #0070f3, #00dfd8)';
-            container.style.backgroundSize = '400% 400%';
-            container.style.animation = 'gradientBG 15s ease infinite';
+            container.style.backgroundColor = '#1a1a1a';
+            container.style.backgroundImage = 'linear-gradient(45deg, #2a2a2a 25%, transparent 25%), linear-gradient(-45deg, #2a2a2a 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #2a2a2a 75%), linear-gradient(-45deg, transparent 75%, #2a2a2a 75%)';
+            container.style.backgroundSize = '30px 30px';
+            container.style.backgroundPosition = '0 0, 0 15px, 15px -15px, -15px 0px';
+            container.style.animation = 'none';
         }
         
         tg.HapticFeedback.impactOccurred('light');
@@ -723,8 +724,6 @@
         
         const wordsCount = parseInt(document.getElementById('input-words')?.value || 1);
         const linesCount = parseInt(document.getElementById('input-lines')?.value || 1);
-        const isAllCaps = document.getElementById('btn-all-caps')?.dataset.state === 'on';
-        const isCapsFirst = document.getElementById('btn-caps-first')?.dataset.state === 'on';
         const isPunct = document.getElementById('btn-punct')?.dataset.state === 'on';
         const sizeVal = parseInt(document.getElementById('input-size')?.value || 1);
         // Read new shadow parameters
@@ -737,7 +736,11 @@
         const isPreset13 = activePresetId === '13';
         const isPreset8 = activePresetId === '8';
         
-        // Apply text scaling based on size slider (0=small, 1=medium, 2=large, 3=max)
+        // Buttons mapping based on user requests:
+        // btn-caps-first is labeled "CAPITALIZED" (in Punctuation section) -> should be ALL CAPS
+        // btn-all-caps is labeled "Case settings" toggle -> should be Sentence Case (Capitalize first letter)
+        const isAllCaps = document.getElementById('btn-caps-first')?.dataset.state === 'on';
+        const isCapsFirst = document.getElementById('btn-all-caps')?.dataset.state === 'on';
         const scaleMap = { 0: 0.75, 1: 1.0, 2: 1.25, 3: 1.6 };
         const scale = scaleMap[sizeVal] || 1.0;
         previewEl.style.transform = `scale(${scale})`;
@@ -751,12 +754,12 @@
         
         if (isAllCaps) {
             processedWords = processedWords.map(w => w.toUpperCase());
+        } else if (isCapsFirst) {
+            processedWords[0] = processedWords[0].charAt(0).toUpperCase() + processedWords[0].slice(1);
         } else if (isPreset13) {
             if (!isPunct) {
                 processedWords = processedWords.map(w => w.toLowerCase());
             }
-        } else if (isCapsFirst) {
-            processedWords[0] = processedWords[0].charAt(0).toUpperCase() + processedWords[0].slice(1);
         }
         
         // Для предпросмотра, если выбран режим AUTO (0), показываем 2 слова построчно
@@ -774,8 +777,6 @@
             selectedWords[0] = selectedWords[0] + ",";
         }
         
-        const textColor = isPreset13 ? (document.getElementById('input-text-color-mask')?.value || '#ffffff') : (document.getElementById('input-text-color')?.value || '#ffffff');
-        const boxColor = document.getElementById('input-box-color')?.value || '#000000';
         const maskInt = document.getElementById('val-mask')?.innerText.toLowerCase() || 'medium';
         
         // Чтение цвета тени/обводки, если элемент есть, иначе #000
@@ -954,6 +955,22 @@
         }
 
         if (newState === 'on') {
+            if (btn.id === 'btn-all-caps') {
+                const other = document.getElementById('btn-caps-first');
+                if (other && other.dataset.state === 'on') {
+                    other.dataset.state = 'off';
+                    other.classList.remove('border-tertiary', 'text-tertiary');
+                    other.classList.add('border-primary', 'text-primary');
+                }
+            } else if (btn.id === 'btn-caps-first') {
+                const other = document.getElementById('btn-all-caps');
+                if (other && other.dataset.state === 'on') {
+                    other.dataset.state = 'off';
+                    other.classList.remove('border-tertiary', 'text-tertiary');
+                    other.classList.add('border-primary', 'text-primary');
+                    other.innerText = 'OFF';
+                }
+            }
             btn.classList.add('border-tertiary', 'text-tertiary');
             btn.classList.remove('border-primary', 'text-primary');
         } else {
@@ -1003,8 +1020,8 @@
                 words_per_screen: Number(document.getElementById('input-words')?.value || 0),
                 max_lines: Number(document.getElementById('input-lines')?.value || 1),
                 punctuation: document.getElementById('btn-punct')?.dataset.state === 'on',
-                uppercase: document.getElementById('btn-all-caps')?.dataset.state === 'on',
-                capitalize_first: document.getElementById('btn-caps-first')?.dataset.state === 'on',
+                uppercase: document.getElementById('btn-caps-first')?.dataset.state === 'on',
+                capitalize_first: document.getElementById('btn-all-caps')?.dataset.state === 'on',
                 text_color: String((isPreset13 ? document.getElementById('input-text-color-mask') : document.getElementById('input-text-color'))?.value || '#ffffff'),
                 box_color: document.getElementById('input-box-color') ? String(document.getElementById('input-box-color').value) : null,
                 animation_type: document.getElementById('val-anim') ? String(document.getElementById('val-anim').innerText.toLowerCase()) : 'default',
