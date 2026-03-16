@@ -139,6 +139,16 @@
             background: linear-gradient(to right, #ff008022, #7928ca22, #0070f322);
             pointer-events: none;
         }
+        .stripes-bg {
+            background: linear-gradient(to right, 
+                #FF3B30 0% 16.6%, 
+                #FF9500 16.6% 33.3%, 
+                #FFCC00 33.3% 50%, 
+                #4CD964 50% 66.6%, 
+                #007AFF 66.6% 83.3%, 
+                #5856D6 83.3% 100%
+            );
+        }
     </style>
 </head>
 <body class="bg-surface text-on-surface font-body neon-grid min-h-screen">
@@ -234,13 +244,9 @@
                 </button>
                 <button onclick="setPreviewBackground('black')" class="w-5 h-5 border border-white/10 bg-black rounded-full hover:border-primary transition-all" title="Black Background"></button>
                 <button onclick="setPreviewBackground('white')" class="w-5 h-5 border border-black/10 bg-white rounded-full hover:border-primary transition-all" title="White Background"></button>
-                <button onclick="setPreviewBackground('mosaic')" class="w-5 h-5 border border-white/20 bg-gray-400 rounded-full hover:border-primary transition-all overflow-hidden relative" title="Mosaic Background">
-                    <div class="absolute inset-0 mosaic-bg opacity-50 scale-150"></div>
+                <button onclick="setPreviewBackground('stripes')" class="w-5 h-5 border border-white/20 bg-primary/40 rounded-full hover:border-primary transition-all overflow-hidden relative" title="Stripes Background">
+                    <div class="absolute inset-0 stripes-bg scale-150"></div>
                 </button>
-                <button onclick="setPreviewBackground('vibrant')" class="w-5 h-5 border border-white/20 bg-primary/40 rounded-full hover:border-primary transition-all overflow-hidden relative" title="Vibrant Mosaic">
-                    <div class="absolute inset-0 mosaic-vibrant-bg scale-150"></div>
-                </button>
-                <button onclick="setPreviewBackground('colorful')" class="w-5 h-5 border border-white/20 bg-gradient-to-tr from-[#ff0080] via-[#7928ca] to-[#0070f3] rounded-full hover:border-primary transition-all" title="Colorful Background"></button>
             </div>
         </div>
     </section>
@@ -667,7 +673,7 @@
         // Reset
         container.style.backgroundColor = '';
         container.style.backgroundImage = '';
-        container.classList.remove('mosaic-bg', 'mosaic-vibrant-bg');
+        container.classList.remove('mosaic-bg', 'mosaic-vibrant-bg', 'stripes-bg');
         container.style.animation = '';
         
         if (color === 'black') {
@@ -676,19 +682,10 @@
         } else if (color === 'white') {
             container.style.backgroundColor = '#ffffff';
             container.style.backgroundImage = 'none';
-        } else if (color === 'mosaic') {
+        } else if (color === 'stripes') {
             container.style.backgroundColor = ''; 
-            container.classList.add('mosaic-bg');
+            container.classList.add('stripes-bg');
             container.style.backgroundImage = '';
-        } else if (color === 'vibrant') {
-            container.style.backgroundColor = ''; 
-            container.classList.add('mosaic-vibrant-bg');
-            container.style.backgroundImage = '';
-        } else if (color === 'colorful') {
-            container.style.backgroundColor = 'transparent';
-            container.style.backgroundImage = 'linear-gradient(45deg, #ff0080, #7928ca, #0070f3, #00dfd8)';
-            container.style.backgroundSize = '400% 400%';
-            container.style.animation = 'gradientBG 15s ease infinite';
         }
         
         tg.HapticFeedback.impactOccurred('light');
