@@ -4,7 +4,7 @@
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>Sublex - Pro Subtitles</title>
-    <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -590,7 +590,7 @@
                     </div>
                     <!-- Lines count -->
                     <!-- Lines count -->
-                    <div class="space-y-3 ${p.id === '12' ? 'hidden' : ''}">
+                    <div class="space-y-3">
                         <div class="flex justify-between">
                             <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="lines_count">${I18N[lang].lines_count}</span>
                             <span class="text-[10px] font-black text-primary uppercase" id="val-lines">${initLines == 0 ? I18N[lang].auto : initLines}</span>
@@ -619,17 +619,15 @@
             </div>
         `;
 
-        if (p.id === '8' || p.id === '12') {
+        if (p.id === '8') {
              html += `
                 <div class="space-y-6 bg-surface-container-low p-6 border border-outline-variant/20">
-                    <p class="text-[10px] font-black tracking-[0.3em] text-primary uppercase mb-4">${p.id === '8' ? 'PRESET_CORE' : 'HISTORY_CORE'}</p>
+                    <p class="text-[10px] font-black tracking-[0.3em] text-primary uppercase mb-4">PRESET_CORE</p>
                     <div class="flex flex-col gap-4">
-                        ${p.id === '8' ? `
                         <div class="flex justify-between items-center">
                             <span class="text-xs font-bold" data-i18n="color_box">${I18N[lang].color_box}</span>
                             <input type="color" id="input-box-color" value="${initBoxColor}" class="w-8 h-8 border-none bg-transparent cursor-pointer" oninput="updatePreviewText()">
                         </div>
-                        ` : ''}
                         <div class="flex justify-between items-center bg-outline-variant/5 p-2 rounded-sm border border-outline-variant/10">
                             <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="color_shadow_stroke">${I18N[lang].color_shadow_stroke}</span>
                             <input type="color" id="input-shadow-color" value="${initShadowColor}" class="w-6 h-6 border-none bg-transparent cursor-pointer" oninput="updatePreviewText()">
@@ -838,7 +836,7 @@
         previewEl.style.transformOrigin = 'center center';
         previewEl.style.textShadow = 'none'; // Reset before recalculation
         
-        let allWords = ["sample", "text", "here", "is", "great", "to", "demonstrate", "this", "style", "properly"];
+        let allWords = ["sample", "text", "here", "is", "great"];
         
         // 1. Process transformations
         let processedWords = [...allWords];
@@ -1000,8 +998,8 @@
             const historyShadowStyle = textShadows.length > 0 ? `text-shadow: ${textShadows.join(', ')};` : '';
             
             previewEl.innerHTML = `
-                <div style="opacity:0.6; font-weight:400; font-size:0.8em; margin-bottom:2px; font-family: 'Montserrat', sans-serif; ${historyShadowStyle}">${historyLine}</div>
-                <div style="font-weight:900; color:${textColor}; font-family: 'Montserrat', sans-serif; ${finalShadowStyle}">${currentLine || "Current word"}</div>
+                <div style="opacity:0.4; font-weight:400; font-size:0.75em; margin-bottom:2px; font-family: 'Space Grotesk', sans-serif; ${historyShadowStyle}">${historyLine}</div>
+                <div style="font-weight:900; color:${textColor}; ${finalShadowStyle}">${currentLine || "Current word"}</div>
             `;
         } else if (previewLinesCount === 1 || previewWordsCount === 1) {
             if (isPreset8) {
