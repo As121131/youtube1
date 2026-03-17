@@ -4,7 +4,7 @@
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>Sublex - Pro Subtitles</title>
-    <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -589,7 +589,8 @@
                             oninput="document.getElementById('val-words').innerText=this.value == 0 ? I18N[currentLang].auto : this.value; updatePreviewText()">
                     </div>
                     <!-- Lines count -->
-                    <div class="space-y-3">
+                    <!-- Lines count -->
+                    <div class="space-y-3 ${p.id === '12' ? 'hidden' : ''}">
                         <div class="flex justify-between">
                             <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="lines_count">${I18N[lang].lines_count}</span>
                             <span class="text-[10px] font-black text-primary uppercase" id="val-lines">${initLines == 0 ? I18N[lang].auto : initLines}</span>
@@ -837,7 +838,7 @@
         previewEl.style.transformOrigin = 'center center';
         previewEl.style.textShadow = 'none'; // Reset before recalculation
         
-        let allWords = ["sample", "text", "here", "is", "great"];
+        let allWords = ["sample", "text", "here", "is", "great", "to", "demonstrate", "this", "style", "properly"];
         
         // 1. Process transformations
         let processedWords = [...allWords];
@@ -999,8 +1000,8 @@
             const historyShadowStyle = textShadows.length > 0 ? `text-shadow: ${textShadows.join(', ')};` : '';
             
             previewEl.innerHTML = `
-                <div style="opacity:0.4; font-weight:400; font-size:0.75em; margin-bottom:2px; font-family: 'Space Grotesk', sans-serif; ${historyShadowStyle}">${historyLine}</div>
-                <div style="font-weight:900; color:${textColor}; ${finalShadowStyle}">${currentLine || "Current word"}</div>
+                <div style="opacity:0.6; font-weight:400; font-size:0.8em; margin-bottom:2px; font-family: 'Montserrat', sans-serif; ${historyShadowStyle}">${historyLine}</div>
+                <div style="font-weight:900; color:${textColor}; font-family: 'Montserrat', sans-serif; ${finalShadowStyle}">${currentLine || "Current word"}</div>
             `;
         } else if (previewLinesCount === 1 || previewWordsCount === 1) {
             if (isPreset8) {
