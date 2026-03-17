@@ -347,7 +347,7 @@
         { id: '9', name: 'PRESET_09', cat: 'CYBER', color: '#ffffff', css: 'background:#50C8F0; color:#fff; padding:6px; font-weight:700; text-shadow: 0 0 5px #fff;', desc: 'Light blue cyber glow.' },
         { id: '10', name: 'PRESET_10', cat: 'NEON', color: '#39FF14', css: 'font-weight:900; text-shadow: 0 0 20px #39FF14;', desc: 'Toxic green neon glow.' },
         { id: '11', name: 'PRESET_11', cat: 'KARAOKE', color: '#ffffff', css: 'font-weight:800; text-shadow: 2px 2px #0000FF66;', desc: 'Green karaoke highlight.' },
-        { id: '12', name: 'PRESET_12', cat: 'HISTORY', color: '#ffffff', css: 'border-bottom: 2px solid #fff; font-weight:800;', desc: 'Two lines history effect.' },
+        { id: '12', name: 'PRESET_12', cat: 'HISTORY', color: '#ffffff', css: 'font-weight:800;', desc: 'Two lines history effect (Previous thin, current bold).' },
         { id: '13', name: 'PRESET_13', cat: 'GLASS', color: '#ffffff', css: 'font-weight:900; font-family: Montserrat, sans-serif;', desc: 'Glass inversion effect.' },
         { id: '14', name: 'PRESET_14', cat: 'PREMIUM', color: '#ffffff', css: 'font-weight:900; text-shadow: 0 0 10px rgba(255,255,255,0.3);', desc: 'Premium Montserrat style.' }
     ];
@@ -990,6 +990,19 @@
                 }
                 previewEl.innerHTML = linesArr.join('<br>');
             }
+        } else if (isPreset12) {
+            // Preset 12 Special: History Effect (Previous thin/grey, current bold/white)
+            // We simulate this by showing a 'history' line above the current one
+            const historyLine = selectedWords.length > 1 ? selectedWords.slice(0, Math.ceil(selectedWords.length/2)).join(' ') : "Previous phrase sample";
+            const currentLine = selectedWords.length > 1 ? selectedWords.slice(Math.ceil(selectedWords.length/2)).join(' ') : selectedWords.join(' ');
+            
+            previewEl.style.lineHeight = '1.0';
+            previewEl.style.letterSpacing = '-0.02em';
+            
+            previewEl.innerHTML = `
+                <div style="opacity:0.4; font-weight:400; font-size:0.75em; margin-bottom:2px; font-family: 'Space Grotesk', sans-serif;">${historyLine}</div>
+                <div style="font-weight:900; color:${textColor}; ${finalShadowStyle}">${currentLine}</div>
+            `;
         } else if (previewLinesCount === 1 || previewWordsCount === 1) {
             if (isPreset8) {
                 const first = selectedWords[0];
@@ -1037,23 +1050,10 @@
                     previewEl.innerHTML = `${line1Words.join(' ')}<br>${line2Words.join(' ')}<br>${line3Words.join(' ')}`;
                 }
             }
-        } else if (isPreset12) {
-            // Preset 12 Special: History Effect (Previous thin/grey, current bold/white)
-            // We simulate this by showing a 'history' line above the current one
-            const historyLine = selectedWords.length > 2 ? selectedWords.slice(0, Math.ceil(selectedWords.length/2)).join(' ') : "Sample History";
-            const currentLine = selectedWords.length > 2 ? selectedWords.slice(Math.ceil(selectedWords.length/2)).join(' ') : selectedWords.join(' ');
-            
-            previewEl.style.lineHeight = '0.9';
-            previewEl.style.letterSpacing = '-0.02em';
-            
-            previewEl.innerHTML = `
-                <div style="opacity:0.4; font-weight:400; font-size:0.8em; margin-bottom:5px;">${historyLine}</div>
-                <div style="font-weight:900; color:${textColor}; ${finalShadowStyle}">${currentLine}</div>
-            `;
         }
     }
 
-    function toggleButton(btn) {
+function toggleButton(btn) {
         const newState = btn.dataset.state === 'on' ? 'off' : 'on';
         btn.dataset.state = newState;
         
