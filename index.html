@@ -618,16 +618,17 @@
             </div>
         `;
 
-        // Preset-specific settings
-        if (p.id === '8') {
+        if (p.id === '8' || p.id === '12') {
              html += `
                 <div class="space-y-6 bg-surface-container-low p-6 border border-outline-variant/20">
-                    <p class="text-[10px] font-black tracking-[0.3em] text-primary uppercase mb-4">PRESET_CORE</p>
+                    <p class="text-[10px] font-black tracking-[0.3em] text-primary uppercase mb-4">${p.id === '8' ? 'PRESET_CORE' : 'HISTORY_CORE'}</p>
                     <div class="flex flex-col gap-4">
+                        ${p.id === '8' ? `
                         <div class="flex justify-between items-center">
                             <span class="text-xs font-bold" data-i18n="color_box">${I18N[lang].color_box}</span>
                             <input type="color" id="input-box-color" value="${initBoxColor}" class="w-8 h-8 border-none bg-transparent cursor-pointer" oninput="updatePreviewText()">
                         </div>
+                        ` : ''}
                         <div class="flex justify-between items-center bg-outline-variant/5 p-2 rounded-sm border border-outline-variant/10">
                             <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="color_shadow_stroke">${I18N[lang].color_shadow_stroke}</span>
                             <input type="color" id="input-shadow-color" value="${initShadowColor}" class="w-6 h-6 border-none bg-transparent cursor-pointer" oninput="updatePreviewText()">
@@ -665,6 +666,7 @@
                                 </div>
                             </div>
                         </div>
+                        ${p.id === '8' ? `
                         <div class="space-y-3">
                             <div class="flex justify-between">
                                 <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="anim_type">${I18N[lang].anim_type}</span>
@@ -673,6 +675,7 @@
                             <input type="range" id="input-anim" min="0" max="2" value="0" class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer accent-primary" 
                                 oninput="const v=['DEFAULT','STATIC','FADE']; document.getElementById('val-anim').innerText=v[this.value]">
                         </div>
+                        ` : ''}
                     </div>
                 </div>
              `;
@@ -980,28 +983,24 @@
             previewEl.style.fontFamily = "'Montserrat', sans-serif";
             
             // Отрисовка текста
-            if (previewLinesCount === 1) {
-                previewEl.innerText = selectedWords.join(' ');
-            } else {
-                const perLine = Math.ceil(selectedWords.length / previewLinesCount);
-                let linesArr = [];
-                for (let i = 0; i < selectedWords.length; i += perLine) {
-                    linesArr.push(selectedWords.slice(i, i + perLine).join(' '));
-                }
-                previewEl.innerHTML = linesArr.join('<br>');
-            }
         } else if (isPreset12) {
             // Preset 12 Special: History Effect (Previous thin/grey, current bold/white)
-            // We simulate this by showing a 'history' line above the current one
-            const historyLine = selectedWords.length > 1 ? selectedWords.slice(0, Math.ceil(selectedWords.length/2)).join(' ') : "Previous phrase sample";
-            const currentLine = selectedWords.length > 1 ? selectedWords.slice(Math.ceil(selectedWords.length/2)).join(' ') : selectedWords.join(' ');
+            // Логика слов: wordsCount определяет количество слов В СТРОКЕ.
+            // Если выбран режим AUTO (0), показываем по 1 слову как на фото.
+            const wordsPerLine = wordsCount === 0 ? 1 : wordsCount;
+            
+            const historyLine = processedWords.slice(0, wordsPerLine).join(' ');
+            const currentLine = processedWords.slice(wordsPerLine, wordsPerLine * 2).join(' ');
             
             previewEl.style.lineHeight = '1.0';
             previewEl.style.letterSpacing = '-0.02em';
             
+            // Применяем обводку и тень к обеим строкам, но история полупрозрачная
+            const historyShadowStyle = textShadows.length > 0 ? `text-shadow: ${textShadows.join(', ')};` : '';
+            
             previewEl.innerHTML = `
-                <div style="opacity:0.4; font-weight:400; font-size:0.75em; margin-bottom:2px; font-family: 'Space Grotesk', sans-serif;">${historyLine}</div>
-                <div style="font-weight:900; color:${textColor}; ${finalShadowStyle}">${currentLine}</div>
+                <div style="opacity:0.4; font-weight:400; font-size:0.75em; margin-bottom:2px; font-family: 'Space Grotesk', sans-serif; ${historyShadowStyle}">${historyLine}</div>
+                <div style="font-weight:900; color:${textColor}; ${finalShadowStyle}">${currentLine || "Current word"}</div>
             `;
         } else if (previewLinesCount === 1 || previewWordsCount === 1) {
             if (isPreset8) {
