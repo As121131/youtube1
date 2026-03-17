@@ -590,7 +590,7 @@
                     </div>
                     <!-- Lines count -->
                     <!-- Lines count -->
-                    <div class="space-y-3">
+                    <div class="space-y-3 ${p.id === '12' ? 'hidden' : ''}">
                         <div class="flex justify-between">
                             <span class="text-[10px] font-black tracking-widest text-on-surface-variant uppercase" data-i18n="lines_count">${I18N[lang].lines_count}</span>
                             <span class="text-[10px] font-black text-primary uppercase" id="val-lines">${initLines == 0 ? I18N[lang].auto : initLines}</span>
@@ -836,7 +836,7 @@
         previewEl.style.transformOrigin = 'center center';
         previewEl.style.textShadow = 'none'; // Reset before recalculation
         
-        let allWords = ["sample", "text", "here", "is", "great"];
+        let allWords = ["sample", "text", "here", "is", "great", "to", "demonstrate", "this", "style", "properly"];
         
         // 1. Process transformations
         let processedWords = [...allWords];
